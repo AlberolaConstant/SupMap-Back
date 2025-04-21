@@ -2,10 +2,9 @@
   "ExpandedNodes": [
     "",
     "\\auth-service",
-    "\\auth-service\\Controller",
     "\\user-service",
     "\\user-service\\Controller"
   ],
-  "SelectedNode": "\\Docker-compose.yml",
+  "SelectedNode": "\\auth-service\\Program.cs",
   "PreviewInSolutionExplorer": false
 }

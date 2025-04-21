@@ -10,7 +10,7 @@ namespace UserService.Controllers
 {
     [Authorize]
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("")]
     public class UserController : ControllerBase
     {
         private readonly UserDbContext _context;
@@ -30,7 +30,7 @@ namespace UserService.Controllers
         }
 
         // Créer un nouvel utilisateur
-        [HttpPost]
+        [HttpPost("create")]
         public async Task<IActionResult> Create(User user)
         {
             // Hash du mot de passe
@@ -41,7 +41,7 @@ namespace UserService.Controllers
         }
 
         // Mettre à jour un utilisateur existant
-        [HttpPut("{id}")]
+        [HttpPut("update/{id}")]
         public async Task<IActionResult> Update(int id, User updated)
         {
             var user = await _context.Users.FindAsync(id);
@@ -63,7 +63,7 @@ namespace UserService.Controllers
         }
 
         // Supprimer un utilisateur
-        [HttpDelete("{id}")]
+        [HttpDelete("delete/{id}")]
         public async Task<IActionResult> Delete(int id)
         {
             var user = await _context.Users.FindAsync(id);

@@ -14,7 +14,7 @@ using DotNetEnv; // Assurez-vous d'avoir ce namespace pour charger les variables
 namespace AuthService.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("")]
 public class AuthController : ControllerBase
 {
     private readonly AuthDbContext _context;

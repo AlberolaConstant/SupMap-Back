@@ -35,8 +35,19 @@ services:
       DB_PASSWORD: ${DB_PASSWORD}
     networks:
       - backend
-    ports:
-      - "4002:8080"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=4proj_4proj_dev"
+      - "traefik.http.services.user-service.loadbalancer.server.port=8080"
+      # API
+      - "traefik.http.routers.user-api.rule=PathPrefix(`/api/user`)"
+      - "traefik.http.routers.user-api.entrypoints=http"
+      - "traefik.http.middlewares.strip-user-prefix.stripprefix.prefixes=/api/user"
+      - "traefik.http.routers.user-api.middlewares=strip-user-prefix"
+      # Swagger
+      - "traefik.http.routers.user-swagger.rule=Host(`localhost`) && Path(`/swagger`)"
+      - "traefik.http.routers.user-swagger.entrypoints=http"
+      - "traefik.http.services.user-service.loadbalancer.server.port=8080"
 
   auth-service:
     build:
@@ -48,18 +59,52 @@ services:
         condition: service_healthy
     environment:
       ASPNETCORE_ENVIRONMENT: Development
-      DB_HOST: user-db
-      DB_PORT: 5432
-      DB_NAME: ${DB_NAME}
-      DB_USER: ${DB_USER}
-      DB_PASSWORD: ${DB_PASSWORD}
+      DOTNET_WATCH_RESTART_ON_RUDE_EDIT: true
     networks:
       - backend
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=4proj_4proj_dev"
+      - "traefik.http.services.auth-service.loadbalancer.server.port=8080"
+        # API
+      - "traefik.http.routers.auth-api.rule=PathPrefix(`/api/auth`)"
+      - "traefik.http.routers.auth-api.entrypoints=http"
+      - "traefik.http.middlewares.strip-auth-prefix.stripprefix.prefixes=/api/auth"
+      - "traefik.http.routers.auth-api.middlewares=strip-auth-prefix"
+      # Swagger
+      - "traefik.http.routers.auth-swagger.rule=Host(`localhost`) && Path(`/swagger`)"
+      - "traefik.http.routers.auth-swagger.entrypoints=http"
+      - "traefik.http.services.auth-service.loadbalancer.server.port=8080"
+
+  traefik:
+    image: "traefik:v2.10"
+    container_name: traefik
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--entrypoints.http.address=:80"
+      - "--ping=true"
+      - "--ping.entrypoint=http"
+      - "--log.level=DEBUG"
+      - "--accesslog=true"
+      - "--metrics.prometheus=true"
+      - "--metrics.prometheus.addEntryPointsLabels=true"
+      - "--metrics.prometheus.addServicesLabels=true"
     ports:
-      - "4001:8080"
+      - "80:80" 
+      - "8080:8080" 
+    networks:
+      - backend
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik.rule=Host(`http://localhost/traefik`)"
+      - "traefik.http.services.traefik.loadbalancer.server.port=8080"
 
 volumes:
   pgdata:
 
 networks:
   backend:
+    driver: bridge
