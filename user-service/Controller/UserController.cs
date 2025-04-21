@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 namespace UserService.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class UserController : ControllerBase
