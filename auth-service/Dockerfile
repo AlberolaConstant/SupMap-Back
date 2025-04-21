@@ -1,15 +1,18 @@
-# Auth Service Dockerfile
+# auth-service/Dockerfile
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 WORKDIR /app
-EXPOSE 80
 
+# Étape de build
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
-COPY . . 
+COPY . .
 RUN dotnet restore
 RUN dotnet publish -c Release -o /app/publish
 
+# Étape finale
 FROM base AS final
 WORKDIR /app
-COPY --from=build /app/publish . 
+COPY --from=build /app/publish .
+COPY .env . 
+
 ENTRYPOINT ["dotnet", "AuthService.dll"]

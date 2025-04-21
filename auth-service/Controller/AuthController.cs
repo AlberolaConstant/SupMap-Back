@@ -4,11 +4,12 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using System.Threading.Tasks; 
+using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using System;
 using AuthService.Data;
 using AuthService.Models;
+using DotNetEnv; // Assurez-vous d'avoir ce namespace pour charger les variables d'environnement
 
 namespace AuthService.Controllers;
 
@@ -23,19 +24,47 @@ public class AuthController : ControllerBase
     {
         _context = context;
         _config = config;
+
+        // Charger les variables d'environnement depuis le fichier .env
+        Env.Load(); // Cette ligne est nécessaire pour charger les variables d'environnement depuis le fichier .env
     }
 
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginDto login)
     {
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == login.Email);
-        if (user == null || !BCrypt.Net.BCrypt.Verify(login.Password, user.PasswordHash))
+        if (user == null || !BCrypt.Net.BCrypt.Verify(login.Password, user.Password))
         {
             return Unauthorized("Invalid credentials");
         }
 
         var token = GenerateJwt(user);
         return Ok(new { token });
+    }
+
+    [HttpPost("register")]
+    public async Task<IActionResult> Register([FromBody] RegisterDto register)
+    {
+        if (await _context.Users.AnyAsync(u => u.Email == register.Email))
+        {
+            return BadRequest("Email already exists.");
+        }
+
+        var hashedPassword = BCrypt.Net.BCrypt.HashPassword(register.Password);
+
+        var user = new User
+        {
+            UserName = register.UserName,
+            Email = register.Email,
+            Password = hashedPassword,
+            Role = register.Role,
+            CreationDate = DateTime.UtcNow
+        };
+
+        _context.Users.Add(user);
+        await _context.SaveChangesAsync();
+
+        return Ok(new { message = "User registered successfully" });
     }
 
     private string GenerateJwt(User user)
@@ -47,7 +76,9 @@ public class AuthController : ControllerBase
             new Claim(ClaimTypes.Role, user.Role)
         };
 
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
+        // Récupérer la clé secrète depuis la variable d'environnement JWT_SECRET
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("JWT_SECRET")!));
+
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
         var token = new JwtSecurityToken(
             claims: claims,
