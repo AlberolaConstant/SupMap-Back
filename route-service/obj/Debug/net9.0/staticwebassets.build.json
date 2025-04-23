@@ -1,0 +1,12 @@
+{
+  "Version": 1,
+  "Hash": "rcQLHRcoTWiLokHUGr9xTqKk/DgAJs+AyysJ3rNnj90=",
+  "Source": "route-service",
+  "BasePath": "_content/route-service",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": [],
+  "Endpoints": []
+}

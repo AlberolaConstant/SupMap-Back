@@ -18,6 +18,33 @@ services:
       retries: 5
       start_period: 10s
 
+  route-service:
+    build:
+      context: ./route-service
+      dockerfile: Dockerfile
+    container_name: route-service
+    depends_on:
+      user-db:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      DOTNET_WATCH_RESTART_ON_RUDE_EDIT: true
+    networks:
+      - backend
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=4proj_4proj_dev"
+      - "traefik.http.services.route-service.loadbalancer.server.port=8080"
+        # API
+      - "traefik.http.routers.route-api.rule=PathPrefix(`/api/route`)"
+      - "traefik.http.routers.route-api.entrypoints=http"
+      - "traefik.http.middlewares.strip-route-prefix.stripprefix.prefixes=/api/route"
+      - "traefik.http.routers.route-api.middlewares=strip-route-prefix"
+      # Swagger
+      - "traefik.http.routers.route-swagger.rule=Host(`localhost`) && Path(`/swagger`)"
+      - "traefik.http.routers.route-swagger.entrypoints=http"
+      - "traefik.http.services.route-service.loadbalancer.server.port=8080"
+      
   user-service:
     build:
       context: ./user-service
