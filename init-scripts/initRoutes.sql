@@ -1,0 +1,12 @@
+CREATE TABLE IF NOT EXISTS "Routes" (
+    "Id" SERIAL PRIMARY KEY,
+    "UserId" INTEGER NOT NULL,
+    "StartLatitude" DOUBLE PRECISION NOT NULL,
+    "StartLongitude" DOUBLE PRECISION NOT NULL,
+    "EndLatitude" DOUBLE PRECISION NOT NULL,
+    "EndLongitude" DOUBLE PRECISION NOT NULL,
+    "TransportMode" VARCHAR(20) DEFAULT 'auto',
+    "AvoidTolls" BOOLEAN DEFAULT FALSE,
+    "CreatedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    "RouteData" TEXT DEFAULT ''
+);

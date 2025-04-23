@@ -1,12 +1,16 @@
 {
   "ExpandedNodes": [
     "",
-    "\\auth-service",
+    "\\auth-service\\bin\\Debug",
+    "\\auth-service\\Data",
     "\\auth-service\\Model",
-    "\\user-service",
-    "\\user-service\\Controller",
-    "\\user-service\\Model"
+    "\\init-scripts",
+    "\\route-service\\Controller",
+    "\\route-service\\Data",
+    "\\route-service\\Model",
+    "\\route-service\\Service",
+    "\\user-service"
   ],
-  "SelectedNode": "\\auth-service\\Model\\User.cs",
+  "SelectedNode": "\\init-scripts\\initRoutes.sql",
   "PreviewInSolutionExplorer": false
 }

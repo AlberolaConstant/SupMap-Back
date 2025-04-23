@@ -1,0 +1,12 @@
+{
+  "Version": 1,
+  "Hash": "d2W/vcoYnRpF8ANqKrHiTL6CZVbmeBmypLum4pTh5fA=",
+  "Source": "RoutesService",
+  "BasePath": "_content/RoutesService",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": [],
+  "Endpoints": []
+}

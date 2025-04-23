@@ -1,10 +1,11 @@
 {
   "version": 2,
-  "dgSpecHash": "tIx+4O6S/Ig=",
+  "dgSpecHash": "ng7j6DbPOnk=",
   "success": true,
   "projectFilePath": "C:\\Users\\consa\\Desktop\\Supinfo\\4ProjeTest\\SupMap-Back\\user-service\\UserService.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\consa\\.nuget\\packages\\bcrypt.net-next\\4.0.2\\bcrypt.net-next.4.0.2.nupkg.sha512",
+    "C:\\Users\\consa\\.nuget\\packages\\dotnetenv\\1.1.0\\dotnetenv.1.1.0.nupkg.sha512",
     "C:\\Users\\consa\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",
     "C:\\Users\\consa\\.nuget\\packages\\microsoft.aspnetcore.authentication.jwtbearer\\8.0.0\\microsoft.aspnetcore.authentication.jwtbearer.8.0.0.nupkg.sha512",
     "C:\\Users\\consa\\.nuget\\packages\\microsoft.bcl.asyncinterfaces\\6.0.0\\microsoft.bcl.asyncinterfaces.6.0.0.nupkg.sha512",

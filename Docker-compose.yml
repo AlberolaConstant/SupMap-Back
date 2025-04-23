@@ -9,7 +9,8 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
     volumes:
-      - ./init-scripts:/docker-entrypoint-initdb.d
+      - ./init-scripts/initUser.sql:/docker-entrypoint-initdb.d/initUser.sql  
+      - user-db-data:/var/lib/postgresql/data
     networks:
       - backend
     healthcheck:
@@ -17,6 +18,25 @@ services:
       interval: 10s
       retries: 5
       start_period: 10s
+
+  route-db:
+    image: postgres:15
+    container_name: route-db
+    environment:
+      POSTGRES_USER: ${ROUTE_DB_USER}
+      POSTGRES_PASSWORD: ${ROUTE_DB_PASSWORD}
+      POSTGRES_DB: ${ROUTE_DB_NAME}
+    volumes:
+      - ./init-scripts/initRoutes.sql:/docker-entrypoint-initdb.d/initRoutes.sql
+      - route-db-data:/var/lib/postgresql/data
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${ROUTE_DB_USER}"]
+      interval: 10s
+      retries: 5
+      start_period: 10s
+
 
   user-service:
     build:
@@ -76,6 +96,37 @@ services:
       - "traefik.http.routers.auth-swagger.entrypoints=http"
       - "traefik.http.services.auth-service.loadbalancer.server.port=8080"
 
+  route-service:
+    build:
+      context: ./route-service
+      dockerfile: Dockerfile
+    container_name: route-service
+    depends_on:
+      route-db:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      DB_HOST: route-db
+      DB_PORT: 5432
+      DB_NAME: ${ROUTE_DB_NAME}
+      DB_USER: ${ROUTE_DB_USER}
+      DB_PASSWORD: ${ROUTE_DB_PASSWORD}
+      CONNECTION_STRING: Host=route-db;Port=5432;Database=${ROUTE_DB_NAME};Username=${ROUTE_DB_USER};Password=${ROUTE_DB_PASSWORD}
+    networks:
+      - backend
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=backend"
+      - "traefik.http.services.route-service.loadbalancer.server.port=8080"
+      - "traefik.http.routers.route-api.rule=PathPrefix(`/api/route`)"
+      - "traefik.http.routers.route-api.entrypoints=http"
+      - "traefik.http.middlewares.strip-route-prefix.stripprefix.prefixes=/api/route"
+      - "traefik.http.routers.route-api.middlewares=strip-route-prefix"
+      - "traefik.http.routers.route-swagger.rule=Host(`localhost`) && PathPrefix(`/swagger`)"
+      - "traefik.http.routers.route-swagger.entrypoints=http"
+      - "traefik.http.services.route-service.loadbalancer.server.port=8080"
+
+
   traefik:
     image: "traefik:v2.10"
     container_name: traefik
@@ -103,7 +154,8 @@ services:
       - "traefik.http.services.traefik.loadbalancer.server.port=8080"
 
 volumes:
-  pgdata:
+   user-db-data:
+   route-db-data:
 
 networks:
   backend:

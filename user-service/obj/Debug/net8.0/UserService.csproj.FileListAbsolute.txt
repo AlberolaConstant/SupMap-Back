@@ -114,3 +114,4 @@ C:\Users\consa\Desktop\Supinfo\4ProjeTest\SupMap-Back\user-service\obj\Debug\net
 C:\Users\consa\Desktop\Supinfo\4ProjeTest\SupMap-Back\user-service\obj\Debug\net8.0\UserService.pdb
 C:\Users\consa\Desktop\Supinfo\4ProjeTest\SupMap-Back\user-service\obj\Debug\net8.0\UserService.genruntimeconfig.cache
 C:\Users\consa\Desktop\Supinfo\4ProjeTest\SupMap-Back\user-service\obj\Debug\net8.0\ref\UserService.dll
+C:\Users\consa\Desktop\Supinfo\4ProjeTest\SupMap-Back\user-service\bin\Debug\net8.0\DotNetEnv.dll
