@@ -37,7 +37,7 @@ services:
       - backend
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=4proj_4proj_dev"
+      - "traefik.docker.network=backend"
       - "traefik.http.services.user-service.loadbalancer.server.port=8080"
       # API
       - "traefik.http.routers.user-api.rule=PathPrefix(`/api/user`)"
@@ -64,7 +64,7 @@ services:
       - backend
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=4proj_4proj_dev"
+      - "traefik.docker.network=backend"
       - "traefik.http.services.auth-service.loadbalancer.server.port=8080"
         # API
       - "traefik.http.routers.auth-api.rule=PathPrefix(`/api/auth`)"
