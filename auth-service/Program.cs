@@ -9,7 +9,7 @@ using AuthService.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
-Env.Load();
+DotNetEnv.Env.Load();
 
 // Ajouter les services à l'application
 builder.Services.AddControllers();

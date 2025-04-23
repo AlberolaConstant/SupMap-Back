@@ -26,7 +26,7 @@ public class AuthController : ControllerBase
         _config = config;
 
         // Charger les variables d'environnement depuis le fichier .env
-        Env.Load(); // Cette ligne est nécessaire pour charger les variables d'environnement depuis le fichier .env
+        Env.Load();
     }
 
     [HttpPost("login")]
@@ -46,9 +46,9 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> Register([FromBody] RegisterDto register)
     {
         if (await _context.Users.AnyAsync(u => u.Email == register.Email))
-        {
             return BadRequest("Email already exists.");
-        }
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
 
         var hashedPassword = BCrypt.Net.BCrypt.HashPassword(register.Password);
 
@@ -75,12 +75,13 @@ public class AuthController : ControllerBase
             new Claim(ClaimTypes.Name, user.Email),
             new Claim(ClaimTypes.Role, user.Role)
         };
-
         // Récupérer la clé secrète depuis la variable d'environnement JWT_SECRET
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("JWT_SECRET")!));
 
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
         var token = new JwtSecurityToken(
+            issuer: Environment.GetEnvironmentVariable("Jwt_Issuer"),
+            audience: Environment.GetEnvironmentVariable("Jwt_Audience"),
             claims: claims,
             expires: DateTime.Now.AddHours(1),
             signingCredentials: creds
