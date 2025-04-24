@@ -1,16 +1,14 @@
 {
   "ExpandedNodes": [
     "",
-    "\\auth-service\\bin\\Debug",
-    "\\auth-service\\Data",
-    "\\auth-service\\Model",
-    "\\init-scripts",
+    "\\auth-service",
+    "\\route-service",
     "\\route-service\\Controller",
     "\\route-service\\Data",
-    "\\route-service\\Model",
     "\\route-service\\Service",
-    "\\user-service"
+    "\\user-service",
+    "\\user-service\\Data"
   ],
-  "SelectedNode": "\\init-scripts\\initRoutes.sql",
+  "SelectedNode": "\\user-service\\README.md",
   "PreviewInSolutionExplorer": false
 }

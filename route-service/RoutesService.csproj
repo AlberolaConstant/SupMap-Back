@@ -14,6 +14,7 @@
 	  <PackageReference Include="BCrypt.Net-Next" Version="4.0.2" />
 	  <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
 	  <PackageReference Include="DotNetEnv" Version="1.1.0" />
+	  <ProjectReference Include="./user-service/UserService.csproj" />
   </ItemGroup>
 
 </Project>

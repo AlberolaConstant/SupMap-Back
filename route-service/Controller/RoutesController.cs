@@ -1,91 +1,163 @@
-namespace RoutesService.Controller
-{
-    using RoutesService.Models;
-    using RoutesService.Service;
-    using Microsoft.AspNetCore.Mvc;
-    using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using RoutesService.Models;
+using RoutesService.Service;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
+namespace RoutesService.Controllers
+{
     [ApiController]
-    [Route("api/[controller]")]
-    public class RoutesController : ControllerBase
+    [Route("")]
+    [Authorize]
+    public class RouteController : ControllerBase
     {
         private readonly IRouteService _routeService;
+        private readonly ILogger<RouteController> _logger;
 
-        public RoutesController(IRouteService routeService)
+        public RouteController(IRouteService routeService, ILogger<RouteController> logger)
         {
             _routeService = routeService;
+            _logger = logger;
         }
 
-        [HttpGet("user/{userId}")]
-        public ActionResult<List<Route>> GetUserRecentRoutes(int userId, [FromQuery] int limit = 5)
+        [HttpPost("calculate")]
+        public async Task<ActionResult<Route>> CalculateRoute([FromBody] RouteRequest request)
         {
-            return _routeService.GetUserRecentRoutes(userId, limit);
-        }
-
-        [HttpGet("{id}")]
-        public ActionResult<Route> GetRouteById(int id)
-        {
-            var route = _routeService.GetRouteById(id);
-            if (route == null)
-                return NotFound();
-
-            return route;
-        }
-
-        [HttpPost]
-        public ActionResult<Route> SaveRoute(Route route)
-        {
-            // Validation des donn�es
-            if (!IsValidTransportMode(route.TransportMode))
-            {
-                return BadRequest("Mode de transport invalide. Les modes valides sont : 'auto', 'bicycle', 'pedestrian', 'motor_scooter', 'bus', 'motorcycle'");
-            }
-
-            var savedRoute = _routeService.SaveRoute(route);
-            return CreatedAtAction(nameof(GetRouteById), new { id = savedRoute.Id }, savedRoute);
-        }
-
-        [HttpDelete("{id}")]
-        public IActionResult DeleteRoute(int id)
-        {
-            var result = _routeService.DeleteRoute(id);
-            if (!result)
-                return NotFound();
-
-            return NoContent();
-        }
-
-        [HttpGet("calculate")]
-        public async Task<ActionResult<string>> CalculateRoute(
-            [FromQuery] double startLat,
-            [FromQuery] double startLon,
-            [FromQuery] double endLat,
-            [FromQuery] double endLon,
-            [FromQuery] string transportMode = "auto",
-            [FromQuery] bool avoidTolls = false)
-        {
-            if (!IsValidTransportMode(transportMode))
-            {
-                return BadRequest("Mode de transport invalide. Les modes valides sont : 'auto', 'bicycle', 'pedestrian', 'motor_scooter', 'bus', 'motorcycle'");
-            }
-
             try
             {
-                var routeData = await _routeService.GetRouteFromValhalla(
-                    startLat, startLon, endLat, endLon, transportMode, avoidTolls);
+                // Récupérer l'ID de l'utilisateur à partir du token JWT
+                var userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
+                if (userId == 0)
+                {
+                    return Unauthorized("Utilisateur non authentifié.");
+                }
 
-                return Ok(routeData);
+                // Calculer l'itinéraire avec Valhalla
+                var routeData = await _routeService.GetRouteFromValhalla(
+                    request.StartLatitude,
+                    request.StartLongitude,
+                    request.EndLatitude,
+                    request.EndLongitude,
+                    request.TransportMode ?? "auto",
+                    request.AvoidTolls
+                );
+
+                // Créer et sauvegarder l'itinéraire
+                var route = new Route
+                {
+                    UserId = userId,
+                    StartLatitude = request.StartLatitude,
+                    StartLongitude = request.StartLongitude,
+                    EndLatitude = request.EndLatitude,
+                    EndLongitude = request.EndLongitude,
+                    TransportMode = request.TransportMode ?? "auto",
+                    AvoidTolls = request.AvoidTolls,
+                    CreatedAt = DateTime.Now,
+                    RouteData = routeData
+                };
+
+                _routeService.SaveRoute(route);
+                
+                return Ok(route);
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Erreur lors de la r�cup�ration de l'itin�raire: {ex.Message}");
+                _logger.LogError(ex, "Erreur lors du calcul de l'itinéraire");
+                return StatusCode(500, "Une erreur est survenue lors du calcul de l'itinéraire.");
             }
         }
 
-        private bool IsValidTransportMode(string transportMode)
+        [HttpGet("user/{userId}/recent")]
+        public ActionResult<IEnumerable<Route>> GetUserRecentRoutes(int userId, [FromQuery] int limit = 10)
         {
-            var validModes = new[] { "auto", "bicycle", "pedestrian", "motor_scooter", "bus", "motorcycle" };
-            return validModes.Contains(transportMode.ToLower());
+            try
+            {
+                // Vérifier que l'utilisateur peut accéder à ces données
+                var currentUserId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
+                if (currentUserId != userId && !User.IsInRole("Admin"))
+                {
+                    return Forbid("Vous n'êtes pas autorisé à accéder aux itinéraires de cet utilisateur.");
+                }
+
+                var routes = _routeService.GetUserRecentRoutes(userId, limit);
+                return Ok(routes);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erreur lors de la récupération des itinéraires récents");
+                return StatusCode(500, "Une erreur est survenue lors de la récupération des itinéraires récents.");
+            }
         }
+
+        [HttpGet("{id}")]
+        public ActionResult<Route> GetRoute(int id)
+        {
+            try
+            {
+                var route = _routeService.GetRouteById(id);
+                
+                // Vérifier que l'utilisateur peut accéder à ces données
+                var currentUserId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
+                if (route.UserId != currentUserId && !User.IsInRole("Admin"))
+                {
+                    return Forbid("Vous n'êtes pas autorisé à accéder à cet itinéraire.");
+                }
+                
+                return Ok(route);
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound("L'itinéraire demandé n'a pas été trouvé.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erreur lors de la récupération de l'itinéraire");
+                return StatusCode(500, "Une erreur est survenue lors de la récupération de l'itinéraire.");
+            }
+        }
+
+        [HttpDelete("{id}")]
+        public ActionResult DeleteRoute(int id)
+        {
+            try
+            {
+                var route = _routeService.GetRouteById(id);
+                
+                // Vérifier que l'utilisateur peut supprimer cet itinéraire
+                var currentUserId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
+                if (route.UserId != currentUserId && !User.IsInRole("Admin"))
+                {
+                    return Forbid("Vous n'êtes pas autorisé à supprimer cet itinéraire.");
+                }
+                
+                var result = _routeService.DeleteRoute(id);
+                if (result)
+                {
+                    return NoContent();
+                }
+                return NotFound("L'itinéraire demandé n'a pas été trouvé.");
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound("L'itinéraire demandé n'a pas été trouvé.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erreur lors de la suppression de l'itinéraire");
+                return StatusCode(500, "Une erreur est survenue lors de la suppression de l'itinéraire.");
+            }
+        }
+    }
+
+    public class RouteRequest
+    {
+        public double StartLatitude { get; set; }
+        public double StartLongitude { get; set; }
+        public double EndLatitude { get; set; }
+        public double EndLongitude { get; set; }
+        public string? TransportMode { get; set; } = "auto";
+        public bool AvoidTolls { get; set; } = false;
     }
 }

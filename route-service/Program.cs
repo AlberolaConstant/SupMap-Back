@@ -1,73 +1,73 @@
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using RoutesService.Service;
-using RoutesService.Data;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-
+using Microsoft.IdentityModel.Tokens;
+using RoutesService.Data;
+using RoutesService.Service;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Ajouter services
+// Load environment variables
+DotNetEnv.Env.Load();
+
+// Configure database connection
+string? connectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING");
+builder.Services.AddDbContext<RoutesDbContext>(options =>
+    options.UseNpgsql(connectionString));
+
+// Configure services
+builder.Services.AddScoped<IRouteService, RouteService>();
+builder.Services.AddHttpClient();
+
+// Add controllers and API documentation
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// CORS : accepte toutes les origines
-builder.Services.AddCors(options =>
+// Configure JWT authentication
+string? jwtKey = Environment.GetEnvironmentVariable("JWT_SECRET");
+string? jwtIssuer = Environment.GetEnvironmentVariable("Jwt_Issuer");
+string? jwtAudience = Environment.GetEnvironmentVariable("Jwt_Audience");
+
+builder.Services.AddAuthentication(options =>
 {
-    options.AddPolicy("AllowAll", policy =>
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
     {
-        policy.AllowAnyOrigin()
-              .AllowAnyMethod()
-              .AllowAnyHeader();
-    });
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = jwtIssuer,
+        ValidAudience = jwtAudience,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey ?? "SuperSecretKeyJwtForAuth!!123456"))
+    };
 });
-
-// Configuration de la connexion à la base de données via les variables d'environnement
-var dbHost = Environment.GetEnvironmentVariable("DB_HOST");
-var dbPort = Environment.GetEnvironmentVariable("DB_PORT");
-var dbName = Environment.GetEnvironmentVariable("DB_NAME");
-var dbUser = Environment.GetEnvironmentVariable("DB_USER");
-var dbPassword = Environment.GetEnvironmentVariable("DB_PASSWORD");
-
-var connectionString = $"Host={dbHost};Port={dbPort};Database={dbName};Username={dbUser};Password={dbPassword}";
-
-builder.Services.AddDbContext<RoutesDbContext>(options =>
-    options.UseNpgsql(connectionString));
-
-// DI de ton service
-builder.Services.AddScoped<IRouteService, RouteService>();
 
 var app = builder.Build();
 
-// Appliquer automatiquement les migrations au démarrage de l'application
+// Configure middleware
+if (app.Environment.IsDevelopment())
+{
+    app.UseDeveloperExceptionPage();
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapControllers();
+
+// Ensure database is created
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<RoutesDbContext>();
-    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-
-    try
-    {
-        logger.LogInformation("Applying database migrations...");
-        dbContext.Database.Migrate(); // Applique les migrations non appliquées
-        logger.LogInformation("Migrations applied successfully.");
-    }
-    catch (Exception ex)
-    {
-        logger.LogError(ex, "An error occurred while applying migrations.");
-    }
+    dbContext.Database.EnsureCreated();
 }
-
-
-// Activer Swagger (toujours, même en production)
-app.UseSwagger();
-app.UseSwaggerUI();
-// Utiliser CORS
-app.UseCors("AllowAll");
-// Middleware HTTP standard
-app.UseHttpsRedirection();
-app.UseAuthorization();
-app.MapControllers();
 
 app.Run();
