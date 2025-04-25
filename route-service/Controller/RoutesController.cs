@@ -29,6 +29,7 @@ namespace RoutesService.Controllers
             {
                 // Récupérer l'ID de l'utilisateur à partir du token JWT
                 var userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
+                Console.WriteLine($"UserId: {userId}");
                 if (userId == 0)
                 {
                     return Unauthorized("Utilisateur non authentifié.");
@@ -54,7 +55,7 @@ namespace RoutesService.Controllers
                     EndLongitude = request.EndLongitude,
                     TransportMode = request.TransportMode ?? "auto",
                     AvoidTolls = request.AvoidTolls,
-                    CreatedAt = DateTime.Now,
+                    CreatedAt = DateTime.UtcNow,
                     RouteData = routeData
                 };
 

@@ -1,68 +1,109 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using RoutesService.Data;
 using RoutesService.Service;
 using System.Text;
-using DotNetEnv;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Load environment variables
+// Load environment variables from .env file
 DotNetEnv.Env.Load();
 
-// Configure database connection
-string? connectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING");
+// Configure DbContext with PostgreSQL
+var connectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING");
 builder.Services.AddDbContext<RoutesDbContext>(options =>
     options.UseNpgsql(connectionString));
 
-// Configure services
-builder.Services.AddScoped<IRouteService, RouteService>();
+// Add HttpClient for external API calls (Valhalla)
 builder.Services.AddHttpClient();
 
-// Add controllers and API documentation
-builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+// Register services
+builder.Services.AddScoped<IRouteService, RouteService>();
 
-// Configuration de l'authentification JWT
-var jwtKey = Environment.GetEnvironmentVariable("JWT_SECRET"); // Récupérer la clé JWT depuis les variables d'environnement
+// Configure JWT Authentication
+var jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET");
+var jwtIssuer = Environment.GetEnvironmentVariable("JWT_ISSUER");
+var jwtAudience = Environment.GetEnvironmentVariable("JWT_AUDIENCE");
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(opt =>
+    .AddJwtBearer(options =>
     {
-        opt.TokenValidationParameters = new TokenValidationParameters
+        options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
             ValidateAudience = true,
-            ValidIssuer = Environment.GetEnvironmentVariable("JWT_ISSUER"),
-            ValidAudience = Environment.GetEnvironmentVariable("JWT_AUDIENCE"),
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey ?? "default-key"))
+            ValidIssuer = jwtIssuer,
+            ValidAudience = jwtAudience,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret!))
         };
     });
-builder.Services.AddAuthorization();
+
+// Add controllers
+builder.Services.AddControllers();
+
+// Configure Swagger with JWT Auth and handle Traefik routing
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Routes API", Version = "v1" });
+
+    // Define JWT security scheme
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Description = "JWT Authorization header using the Bearer scheme.",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer"
+    });
+
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[] {}
+        }
+    });
+
+    // Set Swagger to use the correct server URL with Traefik prefix
+    c.AddServer(new OpenApiServer
+    {
+        Url = "http://localhost/api/route",
+        Description = "Route API with Traefik"
+    });
+});
+
 var app = builder.Build();
 
-// Configure middleware
+// Configure middleware pipeline
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(c => {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Routes API v1");
+        // Set the RoutePrefix to an empty string so the Swagger UI is served at the root
+        c.RoutePrefix = string.Empty;
+    });
 }
 
+app.UseRouting();
+
+// Important: UseAuthentication must come before UseAuthorization
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-
-// Ensure database is created
-using (var scope = app.Services.CreateScope())
-{
-    var dbContext = scope.ServiceProvider.GetRequiredService<RoutesDbContext>();
-    dbContext.Database.EnsureCreated();
-}
 
 app.Run();

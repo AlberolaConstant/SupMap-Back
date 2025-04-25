@@ -71,9 +71,10 @@ public class AuthController : ControllerBase
     {
         var claims = new[]
         {
-            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new Claim(ClaimTypes.Uri, user.Id.ToString()),
             new Claim(ClaimTypes.Name, user.Email),
-            new Claim(ClaimTypes.Role, user.Role)
+            new Claim(ClaimTypes.Role, user.Role),
+            new Claim("userId", user.Id.ToString())
         };
         // Récupérer la clé secrète depuis la variable d'environnement JWT_SECRET
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("JWT_SECRET")!));

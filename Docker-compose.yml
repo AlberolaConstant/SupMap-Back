@@ -37,6 +37,23 @@ services:
       retries: 5
       start_period: 10s
 
+  incident-db:
+    image: postgres:15
+    container_name: incident-db
+    environment:
+        POSTGRES_USER: ${INCIDENT_DB_USER}
+        POSTGRES_PASSWORD: ${INCIDENT_DB_PASSWORD}
+        POSTGRES_DB: ${INCIDENT_DB_NAME}
+    volumes:
+        - ./init-scripts/initIncident.sql:/docker-entrypoint-initdb.d/initIncident.sql
+        - incident-db-data:/var/lib/postgresql/data
+    networks:
+        - backend
+    healthcheck:
+        test: ["CMD-SHELL", "pg_isready -U ${ROUTE_DB_USER}"]
+        interval: 10s
+        retries: 5
+        start_period: 10s
 
   user-service:
     build:
@@ -126,6 +143,36 @@ services:
       - "traefik.http.routers.route-swagger.entrypoints=http"
       - "traefik.http.services.route-service.loadbalancer.server.port=8080"
 
+  incident-service:
+    build:
+      context: ./incident-service
+      dockerfile: Dockerfile
+    container_name: incident-service
+    depends_on:
+      incident-db:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      DB_HOST: incident-db
+      DB_PORT: 5432
+      DB_NAME: ${INCIDENT_DB_NAME}
+      DB_USER: ${INCIDENT_DB_USER}
+      DB_PASSWORD: ${INCIDENT_DB_PASSWORD}
+      CONNECTION_STRING: Host=route-db;Port=5432;Database=${INCIDENT_DB_NAME};Username=${INCIDENT_DB_USER};Password=${INCIDENT_DB_PASSWORD}
+    networks:
+      - backend
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=backend"
+      - "traefik.http.services.incident-service.loadbalancer.server.port=8080"
+      - "traefik.http.routers.incident-api.rule=PathPrefix(`/api/incident`)"
+      - "traefik.http.routers.incident-api.entrypoints=http"
+      - "traefik.http.middlewares.strip-incident-prefix.stripprefix.prefixes=/api/incident"
+      - "traefik.http.routers.incident-api.middlewares=strip-route-prefix"
+      - "traefik.http.routers.incident-swagger.rule=Host(`localhost`) && PathPrefix(`/swagger`)"
+      - "traefik.http.routers.incident-swagger.entrypoints=http"
+      - "traefik.http.services.incident-service.loadbalancer.server.port=8080"
+
 
   traefik:
     image: "traefik:v2.10"
@@ -156,6 +203,7 @@ services:
 volumes:
    user-db-data:
    route-db-data:
+   incident-db-data:
 
 networks:
   backend:

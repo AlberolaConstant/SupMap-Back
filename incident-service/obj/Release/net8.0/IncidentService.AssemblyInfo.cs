@@ -11,12 +11,12 @@
 using System;
 using System.Reflection;
 
-[assembly: System.Reflection.AssemblyCompanyAttribute("AuthService")]
-[assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
+[assembly: System.Reflection.AssemblyCompanyAttribute("IncidentService")]
+[assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
 [assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+07658fb5d30978b5d3b192257c10b609f1c1bbe0")]
-[assembly: System.Reflection.AssemblyProductAttribute("AuthService")]
-[assembly: System.Reflection.AssemblyTitleAttribute("AuthService")]
+[assembly: System.Reflection.AssemblyProductAttribute("IncidentService")]
+[assembly: System.Reflection.AssemblyTitleAttribute("IncidentService")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
 
 // Généré par la classe MSBuild WriteCodeFragment.
