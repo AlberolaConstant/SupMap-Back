@@ -4,6 +4,7 @@ using Microsoft.IdentityModel.Tokens;
 using RoutesService.Data;
 using RoutesService.Service;
 using System.Text;
+using DotNetEnv;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,30 +25,24 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Configure JWT authentication
-string? jwtKey = Environment.GetEnvironmentVariable("JWT_SECRET");
-string? jwtIssuer = Environment.GetEnvironmentVariable("Jwt_Issuer");
-string? jwtAudience = Environment.GetEnvironmentVariable("Jwt_Audience");
+// Configuration de l'authentification JWT
+var jwtKey = Environment.GetEnvironmentVariable("JWT_SECRET"); // Récupérer la clé JWT depuis les variables d'environnement
 
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-.AddJwtBearer(options =>
-{
-    options.TokenValidationParameters = new TokenValidationParameters
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(opt =>
     {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
-        ValidIssuer = jwtIssuer,
-        ValidAudience = jwtAudience,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey ?? "SuperSecretKeyJwtForAuth!!123456"))
-    };
-});
-
+        opt.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidIssuer = Environment.GetEnvironmentVariable("JWT_ISSUER"),
+            ValidAudience = Environment.GetEnvironmentVariable("JWT_AUDIENCE"),
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey ?? "default-key"))
+        };
+    });
+builder.Services.AddAuthorization();
 var app = builder.Build();
 
 // Configure middleware

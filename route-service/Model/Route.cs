@@ -1,6 +1,6 @@
 namespace RoutesService.Models
 {
-    public class Route
+    public class Road
     {
         public int Id { get; set; }
         public int UserId { get; set; }

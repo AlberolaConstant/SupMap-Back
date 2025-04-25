@@ -80,8 +80,8 @@ public class AuthController : ControllerBase
 
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
         var token = new JwtSecurityToken(
-            issuer: Environment.GetEnvironmentVariable("Jwt_Issuer"),
-            audience: Environment.GetEnvironmentVariable("Jwt_Audience"),
+            issuer: Environment.GetEnvironmentVariable("JWT_ISSUER"),
+            audience: Environment.GetEnvironmentVariable("JWT_AUDIENCE"),
             claims: claims,
             expires: DateTime.Now.AddHours(1),
             signingCredentials: creds

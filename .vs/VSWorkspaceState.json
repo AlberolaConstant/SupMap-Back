@@ -2,13 +2,11 @@
   "ExpandedNodes": [
     "",
     "\\auth-service",
+    "\\auth-service\\Controller",
     "\\route-service",
     "\\route-service\\Controller",
-    "\\route-service\\Data",
-    "\\route-service\\Service",
-    "\\user-service",
-    "\\user-service\\Data"
+    "\\route-service\\Service"
   ],
-  "SelectedNode": "\\user-service\\README.md",
+  "SelectedNode": "\\auth-service\\Controller\\AuthController.cs",
   "PreviewInSolutionExplorer": false
 }

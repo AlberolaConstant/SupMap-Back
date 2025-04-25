@@ -8,6 +8,6 @@ namespace RoutesService.Data
         public RoutesDbContext(DbContextOptions<RoutesDbContext> options)
             : base(options) { }
 
-        public DbSet<RoutesService.Models.Route> Routes { get; set; }
+        public DbSet<RoutesService.Models.Road> Routes { get; set; }
     }
 }

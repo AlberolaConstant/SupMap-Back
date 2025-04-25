@@ -28,7 +28,7 @@ namespace RoutesService.Service
         {
             try
             {
-                _logger.LogDebug("Calculating route from ({0}, {1}) to ({2}, {3}) with mode: {4}, avoidTolls: {5}", 
+                _logger.LogDebug("Calculating route from ({0}, {1}) to ({2}, {3}) with mode: {4}, avoidTolls: {5}",
                     startLat, startLon, endLat, endLon, transportMode, avoidTolls);
 
                 // Exemple d'une requête vers un service Valhalla (à adapter selon votre implémentation)
@@ -51,7 +51,7 @@ namespace RoutesService.Service
 
                 // Dans un environnement réel, vous auriez un service Valhalla configuré
                 // Pour ce projet de démonstration, nous allons simuler une réponse
-                
+
                 // Simulation d'une réponse (à remplacer par un appel réel à Valhalla)
                 var mockResponse = new
                 {
@@ -88,7 +88,7 @@ namespace RoutesService.Service
             }
         }
 
-        public List<Route> GetUserRecentRoutes(int userId, int limit)
+        public List<Road> GetUserRecentRoutes(int userId, int limit)
         {
             _logger.LogDebug("Récupération des {0} itinéraires récents pour l'utilisateur {1}", limit, userId);
             return _context.Routes
@@ -98,7 +98,7 @@ namespace RoutesService.Service
                 .ToList();
         }
 
-        public Route GetRouteById(int id)
+        public Road GetRouteById(int id)
         {
             _logger.LogDebug("Récupération de l'itinéraire avec l'ID {0}", id);
             var route = _context.Routes.Find(id);
@@ -109,7 +109,7 @@ namespace RoutesService.Service
             return route;
         }
 
-        public Route SaveRoute(Route route)
+        public Road SaveRoute(Road route)
         {
             _logger.LogDebug("Sauvegarde d'un nouvel itinéraire pour l'utilisateur {0}", route.UserId);
             _context.Routes.Add(route);

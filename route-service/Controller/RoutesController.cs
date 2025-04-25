@@ -23,7 +23,7 @@ namespace RoutesService.Controllers
         }
 
         [HttpPost("calculate")]
-        public async Task<ActionResult<Route>> CalculateRoute([FromBody] RouteRequest request)
+        public async Task<ActionResult<Road>> CalculateRoute([FromBody] RouteRequest request)
         {
             try
             {
@@ -45,7 +45,7 @@ namespace RoutesService.Controllers
                 );
 
                 // Créer et sauvegarder l'itinéraire
-                var route = new Route
+                var route = new Road
                 {
                     UserId = userId,
                     StartLatitude = request.StartLatitude,

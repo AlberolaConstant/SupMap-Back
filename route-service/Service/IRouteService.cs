@@ -7,9 +7,9 @@ namespace RoutesService.Service
     public interface IRouteService
     {
         Task<string> GetRouteFromValhalla(double startLat, double startLon, double endLat, double endLon, string transportMode, bool avoidTolls);
-        List<Route> GetUserRecentRoutes(int userId, int limit);
-        Route GetRouteById(int id);
-        Route SaveRoute(Route route);
+        List<Road> GetUserRecentRoutes(int userId, int limit);
+        Road GetRouteById(int id);
+        Road SaveRoute(Road route);
         bool DeleteRoute(int id);
     }
 }
