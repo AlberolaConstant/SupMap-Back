@@ -168,11 +168,30 @@ services:
       - "traefik.http.routers.incident-api.rule=PathPrefix(`/api/incident`)"
       - "traefik.http.routers.incident-api.entrypoints=http"
       - "traefik.http.middlewares.strip-incident-prefix.stripprefix.prefixes=/api/incident"
-      - "traefik.http.routers.incident-api.middlewares=strip-route-prefix"
+      - "traefik.http.routers.incident-api.middlewares=strip-incident-prefix"
       - "traefik.http.routers.incident-swagger.rule=Host(`localhost`) && PathPrefix(`/swagger`)"
       - "traefik.http.routers.incident-swagger.entrypoints=http"
       - "traefik.http.services.incident-service.loadbalancer.server.port=8080"
 
+  valhalla:
+    image: ghcr.io/nilsnolde/docker-valhalla/valhalla:latest
+    container_name: valhalla_rhone_alpes
+    volumes:
+      - ./custom_files:/custom_files
+      - valhalla-data:/valhalla_tiles
+    environment:
+      - tile_urls=https://download.geofabrik.de/europe/france/rhone-alpes-latest.osm.pbf
+      - server_threads=2
+      - use_tiles_ignore_pbf=False
+    restart: unless-stopped
+    networks:
+      - backend
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=backend"
+      - "traefik.http.services.valhalla.loadbalancer.server.port=8002"
+      - "traefik.http.routers.valhalla.rule=Host(`localhost`) && PathPrefix(`/api/navigation`)"
+      - "traefik.http.routers.valhalla.entrypoints=http"
 
   traefik:
     image: "traefik:v2.10"
@@ -204,6 +223,8 @@ volumes:
    user-db-data:
    route-db-data:
    incident-db-data:
+   valhalla-data:
+   
 
 networks:
   backend:
