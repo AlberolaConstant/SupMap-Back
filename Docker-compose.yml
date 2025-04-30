@@ -175,7 +175,7 @@ services:
 
   valhalla:
     image: ghcr.io/nilsnolde/docker-valhalla/valhalla:latest
-    container_name: valhalla_rhone_alpes
+    container_name: valhalla_rhone
     volumes:
       - ./custom_files:/custom_files
       - valhalla-data:/valhalla_tiles
@@ -186,12 +186,16 @@ services:
     restart: unless-stopped
     networks:
       - backend
+    ports:
+      - "8002:8002" 
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=backend"
       - "traefik.http.services.valhalla.loadbalancer.server.port=8002"
       - "traefik.http.routers.valhalla.rule=Host(`localhost`) && PathPrefix(`/api/navigation`)"
       - "traefik.http.routers.valhalla.entrypoints=http"
+      - "traefik.http.middlewares.strip-navigation-prefix.stripprefix.prefixes=/api/navigation"
+      - "traefik.http.routers.valhalla.middlewares=strip-navigation-prefix"
 
   traefik:
     image: "traefik:v2.10"
