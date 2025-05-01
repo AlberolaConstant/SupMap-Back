@@ -25,12 +25,12 @@ namespace IncidentsService.Controllers
         {
             try
             {
-                var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+                var userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
                 var userName = User.FindFirst(ClaimTypes.Name)?.Value ?? "Utilisateur";
 
                 if (userId == 0)
                 {
-                    return Unauthorized("Utilisateur non authentifié.");
+                    return Unauthorized("Utilisateur non authentifiï¿½.");
                 }
 
                 var incident = await _incidentService.CreateIncident(userId, userName, request);
@@ -38,8 +38,8 @@ namespace IncidentsService.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erreur lors de la création d'un incident");
-                return StatusCode(500, "Une erreur est survenue lors de la création de l'incident: " + ex.Message);
+                _logger.LogError(ex, "Erreur lors de la crï¿½ation d'un incident");
+                return StatusCode(500, "Une erreur est survenue lors de la crï¿½ation de l'incident: " + ex.Message);
             }
         }
 
@@ -53,7 +53,7 @@ namespace IncidentsService.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erreur lors de la recherche d'incidents à proximité");
+                _logger.LogError(ex, "Erreur lors de la recherche d'incidents ï¿½ proximitï¿½");
                 return StatusCode(500, "Une erreur est survenue lors de la recherche d'incidents: " + ex.Message);
             }
         }
@@ -68,12 +68,12 @@ namespace IncidentsService.Controllers
             }
             catch (KeyNotFoundException)
             {
-                return NotFound("L'incident demandé n'a pas été trouvé.");
+                return NotFound("L'incident demandï¿½ n'a pas ï¿½tï¿½ trouvï¿½.");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erreur lors de la récupération de l'incident");
-                return StatusCode(500, "Une erreur est survenue lors de la récupération de l'incident: " + ex.Message);
+                _logger.LogError(ex, "Erreur lors de la rï¿½cupï¿½ration de l'incident");
+                return StatusCode(500, "Une erreur est survenue lors de la rï¿½cupï¿½ration de l'incident: " + ex.Message);
             }
         }
 
@@ -82,10 +82,10 @@ namespace IncidentsService.Controllers
         {
             try
             {
-                var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+                var userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
                 if (userId == 0)
                 {
-                    return Unauthorized("Utilisateur non authentifié.");
+                    return Unauthorized("Utilisateur non authentifiï¿½.");
                 }
 
                 var result = await _incidentService.VoteForIncident(id, userId, request);
@@ -93,7 +93,7 @@ namespace IncidentsService.Controllers
             }
             catch (KeyNotFoundException)
             {
-                return NotFound("L'incident demandé n'a pas été trouvé.");
+                return NotFound("L'incident demandï¿½ n'a pas ï¿½tï¿½ trouvï¿½.");
             }
             catch (InvalidOperationException ex)
             {
@@ -111,16 +111,16 @@ namespace IncidentsService.Controllers
         {
             try
             {
-                var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+               var userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
                 if (userId == 0)
                 {
-                    return Unauthorized("Utilisateur non authentifié.");
+                    return Unauthorized("Utilisateur non authentifiï¿½.");
                 }
 
                 var isAdmin = User.IsInRole("Admin");
                 if (!isAdmin && !(await _incidentService.IsIncidentOwner(id, userId)))
                 {
-                    return Forbid("Vous n'êtes pas autorisé à modifier cet incident.");
+                    return Forbid("Vous n'ï¿½tes pas autorisï¿½ ï¿½ modifier cet incident.");
                 }
 
                 var result = await _incidentService.UpdateIncidentStatus(id, userId, request);
@@ -128,16 +128,16 @@ namespace IncidentsService.Controllers
             }
             catch (KeyNotFoundException)
             {
-                return NotFound("L'incident demandé n'a pas été trouvé.");
+                return NotFound("L'incident demandï¿½ n'a pas ï¿½tï¿½ trouvï¿½.");
             }
             catch (UnauthorizedAccessException)
             {
-                return Forbid("Vous n'êtes pas autorisé à modifier cet incident.");
+                return Forbid("Vous n'ï¿½tes pas autorisï¿½ ï¿½ modifier cet incident.");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erreur lors de la mise à jour du statut de l'incident");
-                return StatusCode(500, "Une erreur est survenue lors de la mise à jour du statut: " + ex.Message);
+                _logger.LogError(ex, "Erreur lors de la mise ï¿½ jour du statut de l'incident");
+                return StatusCode(500, "Une erreur est survenue lors de la mise ï¿½ jour du statut: " + ex.Message);
             }
         }
     }

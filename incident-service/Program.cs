@@ -27,9 +27,9 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // Configure JWT authentication
-string jwtKey = Environment.GetEnvironmentVariable("JWT_SECRET") ?? "SuperSecretKeyJwtForAuth!!123456";
-string jwtIssuer = Environment.GetEnvironmentVariable("Jwt_Issuer") ?? "http://localhost/api/auth";
-string jwtAudience = Environment.GetEnvironmentVariable("Jwt_Audience") ?? "http://localhost:5000";
+string jwtKey = Environment.GetEnvironmentVariable("JWT_SECRET");
+string jwtIssuer = Environment.GetEnvironmentVariable("JWT_ISSUER");
+string jwtAudience = Environment.GetEnvironmentVariable("JWT_AUDIENCE");
 
 builder.Services.AddAuthentication(options =>
 {

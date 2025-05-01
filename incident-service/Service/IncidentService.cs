@@ -23,12 +23,11 @@ namespace IncidentsService.Services
         {
             try
             {
-                _logger.LogDebug("Création d'un incident par l'utilisateur {UserId}", userId);
-
+                _logger.LogDebug("Crï¿½ation d'un incident par l'utilisateur {UserId}", userId);
                 // Calculer la date d'expiration
-                int durationMinutes = request.ExpectedDuration ?? 60; // Par défaut, 60 minutes
+                int durationMinutes = request.ExpectedDuration ?? 60; // Par dï¿½faut, 60 minutes
 
-                // Ajuster la durée en fonction du type d'incident
+                // Ajuster la durï¿½e en fonction du type d'incident
                 durationMinutes = request.Type switch
                 {
                     "accident" => Math.Max(durationMinutes, 120), // Au moins 2 heures
@@ -37,7 +36,7 @@ namespace IncidentsService.Services
                     "hazard" => Math.Max(durationMinutes, 120), // Au moins 2 heures
                     "closure" => Math.Max(durationMinutes, 240), // Au moins 4 heures
                     "traffic_jam" => Math.Max(durationMinutes, 30), // Au moins 30 minutes
-                    _ => 60 // Valeur par défaut
+                    _ => 60 // Valeur par dï¿½faut
                 };
 
                 var incident = new Incident
@@ -48,8 +47,8 @@ namespace IncidentsService.Services
                     Longitude = request.Longitude,
                     Type = request.Type,
                     Description = request.Description,
-                    CreatedAt = DateTime.Now,
-                    ExpiresAt = DateTime.Now.AddMinutes(durationMinutes),
+                    CreatedAt = DateTime.UtcNow,
+                    ExpiresAt = DateTime.UtcNow.AddMinutes(durationMinutes),
                     IsActive = true
                 };
 
@@ -74,8 +73,8 @@ namespace IncidentsService.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erreur lors de la création d'un incident");
-                throw new Exception("Impossible de créer l'incident. Veuillez réessayer plus tard.", ex);
+                _logger.LogError(ex, "Erreur lors de la crï¿½ation d'un incident");
+                throw new Exception("Impossible de crï¿½er l'incident. Veuillez rï¿½essayer plus tard.", ex);
             }
         }
 
@@ -83,7 +82,7 @@ namespace IncidentsService.Services
         {
             try
             {
-                _logger.LogDebug("Récupération de l'incident avec l'ID {Id}", id);
+                _logger.LogDebug("Rï¿½cupï¿½ration de l'incident avec l'ID {Id}", id);
 
                 var incident = await _context.Incidents
                     .Include(i => i.Votes)
@@ -91,7 +90,7 @@ namespace IncidentsService.Services
 
                 if (incident == null)
                 {
-                    throw new KeyNotFoundException("L'incident demandé n'a pas été trouvé.");
+                    throw new KeyNotFoundException("L'incident demandï¿½ n'a pas ï¿½tï¿½ trouvï¿½.");
                 }
 
                 int upvotes = incident.Votes.Count(v => v.Vote > 0);
@@ -119,8 +118,8 @@ namespace IncidentsService.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erreur lors de la récupération de l'incident");
-                throw new Exception("Impossible de récupérer l'incident. Veuillez réessayer plus tard.", ex);
+                _logger.LogError(ex, "Erreur lors de la rï¿½cupï¿½ration de l'incident");
+                throw new Exception("Impossible de rï¿½cupï¿½rer l'incident. Veuillez rï¿½essayer plus tard.", ex);
             }
         }
 
@@ -128,32 +127,32 @@ namespace IncidentsService.Services
         {
             try
             {
-                _logger.LogDebug("Recherche d'incidents à proximité de ({Lat}, {Lon}) dans un rayon de {Radius} km",
+                _logger.LogDebug("Recherche d'incidents ï¿½ proximitï¿½ de ({Lat}, {Lon}) dans un rayon de {Radius} km",
                     request.Latitude, request.Longitude, request.Radius);
 
-                // Filtrer les types d'incidents si spécifiés
+                // Filtrer les types d'incidents si spï¿½cifiï¿½s
                 var typesFilter = new List<string>();
                 if (!string.IsNullOrEmpty(request.Types))
                 {
                     typesFilter = request.Types.Split(',').Select(t => t.Trim()).ToList();
                 }
 
-                // Récupérer tous les incidents actifs qui ne sont pas expirés
+                // Rï¿½cupï¿½rer tous les incidents actifs qui ne sont pas expirï¿½s
                 var query = _context.Incidents
                     .Include(i => i.Votes)
-                    .Where(i => i.IsActive && i.ExpiresAt > DateTime.Now);
+                    .Where(i => i.IsActive && i.ExpiresAt > DateTime.UtcNow);
 
-                // Appliquer le filtre par type si nécessaire
+                // Appliquer le filtre par type si nï¿½cessaire
                 if (typesFilter.Any())
                 {
                     query = query.Where(i => typesFilter.Contains(i.Type));
                 }
 
-                // Récupérer les incidents
+                // Rï¿½cupï¿½rer les incidents
                 var incidents = await query.ToListAsync();
 
                 // Calculer la distance pour chaque incident et filtrer par rayon
-                // Note: Dans une implémentation réelle, vous utiliseriez NetTopologySuite pour des calculs géographiques précis
+                // Note: Dans une implï¿½mentation rï¿½elle, vous utiliseriez NetTopologySuite pour des calculs gï¿½ographiques prï¿½cis
                 var result = incidents
                     .Select(i => {
                         double distance = CalculateDistance(
@@ -189,8 +188,8 @@ namespace IncidentsService.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erreur lors de la recherche d'incidents à proximité");
-                throw new Exception("Impossible de rechercher les incidents à proximité. Veuillez réessayer plus tard.", ex);
+                _logger.LogError(ex, "Erreur lors de la recherche d'incidents ï¿½ proximitï¿½");
+                throw new Exception("Impossible de rechercher les incidents ï¿½ proximitï¿½. Veuillez rï¿½essayer plus tard.", ex);
             }
         }
 
@@ -201,46 +200,46 @@ namespace IncidentsService.Services
                 _logger.LogDebug("Vote de l'utilisateur {UserId} pour l'incident {IncidentId}: {Vote}",
                     userId, incidentId, request.Vote);
 
-                // Vérifier que l'incident existe et est actif
+                // Vï¿½rifier que l'incident existe et est actif
                 var incident = await _context.Incidents
                     .Include(i => i.Votes)
                     .FirstOrDefaultAsync(i => i.Id == incidentId);
 
                 if (incident == null)
                 {
-                    throw new KeyNotFoundException("L'incident demandé n'a pas été trouvé.");
+                    throw new KeyNotFoundException("L'incident demandï¿½ n'a pas ï¿½tï¿½ trouvï¿½.");
                 }
 
-                if (!incident.IsActive || incident.ExpiresAt < DateTime.Now)
+                if (!incident.IsActive || incident.ExpiresAt < DateTime.UtcNow)
                 {
-                    throw new InvalidOperationException("Impossible de voter pour un incident inactif ou expiré.");
+                    throw new InvalidOperationException("Impossible de voter pour un incident inactif ou expirï¿½.");
                 }
 
-                // Vérifier si l'utilisateur a déjà voté
+                // Vï¿½rifier si l'utilisateur a dï¿½jï¿½ votï¿½
                 var existingVote = await _context.IncidentVotes
                     .FirstOrDefaultAsync(v => v.IncidentId == incidentId && v.UserId == userId);
 
                 if (existingVote != null)
                 {
-                    // Mettre à jour le vote existant
+                    // Mettre ï¿½ jour le vote existant
                     existingVote.Vote = request.Vote;
                 }
                 else
                 {
-                    // Créer un nouveau vote
+                    // Crï¿½er un nouveau vote
                     var vote = new IncidentVote
                     {
                         IncidentId = incidentId,
                         UserId = userId,
                         Vote = request.Vote,
-                        CreatedAt = DateTime.Now
+                        CreatedAt = DateTime.UtcNow
                     };
                     _context.IncidentVotes.Add(vote);
                 }
 
                 await _context.SaveChangesAsync();
 
-                // Recharger l'incident pour obtenir les votes mis à jour
+                // Recharger l'incident pour obtenir les votes mis ï¿½ jour
                 incident = await _context.Incidents
                     .Include(i => i.Votes)
                     .FirstOrDefaultAsync(i => i.Id == incidentId);
@@ -266,7 +265,7 @@ namespace IncidentsService.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Erreur lors du vote pour un incident");
-                throw new Exception("Impossible d'enregistrer votre vote. Veuillez réessayer plus tard.", ex);
+                throw new Exception("Impossible d'enregistrer votre vote. Veuillez rï¿½essayer plus tard.", ex);
             }
         }
 
@@ -274,19 +273,19 @@ namespace IncidentsService.Services
         {
             try
             {
-                _logger.LogDebug("Mise à jour du statut de l'incident {IncidentId} par l'utilisateur {UserId}: {Status}",
+                _logger.LogDebug("Mise ï¿½ jour du statut de l'incident {IncidentId} par l'utilisateur {UserId}: {Status}",
                     incidentId, userId, request.IsActive);
 
                 var incident = await _context.Incidents.FindAsync(incidentId);
                 if (incident == null)
                 {
-                    throw new KeyNotFoundException("L'incident demandé n'a pas été trouvé.");
+                    throw new KeyNotFoundException("L'incident demandï¿½ n'a pas ï¿½tï¿½ trouvï¿½.");
                 }
 
-                // Vérifier que seul le propriétaire ou un admin peut modifier le statut
+                // Vï¿½rifier que seul le propriï¿½taire ou un admin peut modifier le statut
                 if (incident.UserId != userId)
                 {
-                    throw new UnauthorizedAccessException("Vous n'êtes pas autorisé à modifier cet incident.");
+                    throw new UnauthorizedAccessException("Vous n'ï¿½tes pas autorisï¿½ ï¿½ modifier cet incident.");
                 }
 
                 incident.IsActive = request.IsActive;
@@ -308,8 +307,8 @@ namespace IncidentsService.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erreur lors de la mise à jour du statut de l'incident");
-                throw new Exception("Impossible de mettre à jour le statut de l'incident. Veuillez réessayer plus tard.", ex);
+                _logger.LogError(ex, "Erreur lors de la mise ï¿½ jour du statut de l'incident");
+                throw new Exception("Impossible de mettre ï¿½ jour le statut de l'incident. Veuillez rï¿½essayer plus tard.", ex);
             }
         }
 
@@ -323,9 +322,9 @@ namespace IncidentsService.Services
         {
             try
             {
-                _logger.LogInformation("Nettoyage des incidents expirés");
+                _logger.LogInformation("Nettoyage des incidents expirï¿½s");
 
-                var now = DateTime.Now;
+                var now = DateTime.UtcNow;
                 var expiredIncidents = await _context.Incidents
                     .Where(i => i.IsActive && i.ExpiresAt < now)
                     .ToListAsync();
@@ -336,21 +335,21 @@ namespace IncidentsService.Services
                 }
 
                 await _context.SaveChangesAsync();
-                _logger.LogInformation("Nettoyage terminé: {Count} incidents désactivés", expiredIncidents.Count);
+                _logger.LogInformation("Nettoyage terminï¿½: {Count} incidents dï¿½sactivï¿½s", expiredIncidents.Count);
 
                 return true;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erreur lors du nettoyage des incidents expirés");
+                _logger.LogError(ex, "Erreur lors du nettoyage des incidents expirï¿½s");
                 return false;
             }
         }
 
-        // Méthode auxiliaire pour calculer la distance entre deux coordonnées (formule de Haversine)
+        // Mï¿½thode auxiliaire pour calculer la distance entre deux coordonnï¿½es (formule de Haversine)
         private double CalculateDistance(double lat1, double lon1, double lat2, double lon2)
         {
-            const double R = 6371; // Rayon de la Terre en kilomètres
+            const double R = 6371; // Rayon de la Terre en kilomï¿½tres
 
             var dLat = ToRadians(lat2 - lat1);
             var dLon = ToRadians(lon2 - lon1);
@@ -360,7 +359,7 @@ namespace IncidentsService.Services
                     Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
 
             var c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
-            return R * c; // Distance en kilomètres
+            return R * c; // Distance en kilomï¿½tres
         }
 
         private double ToRadians(double degrees)

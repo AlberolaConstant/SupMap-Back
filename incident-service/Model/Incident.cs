@@ -13,11 +13,11 @@ namespace IncidentsService.Models
 		public double Longitude { get; set; }
 		public string Type { get; set; } = ""; // accident, construction, police, hazard, closure, traffic_jam
 		public string Description { get; set; } = "";
-		public DateTime CreatedAt { get; set; } = DateTime.Now;
+		public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 		public DateTime ExpiresAt { get; set; }
 		public bool IsActive { get; set; } = true;
 
-		// Propriétés de navigation
+		// Propriï¿½tï¿½s de navigation
 		public ICollection<IncidentVote> Votes { get; set; } = new List<IncidentVote>();
 	}
 
@@ -28,9 +28,9 @@ namespace IncidentsService.Models
 		public int IncidentId { get; set; }
 		public int UserId { get; set; }
 		public int Vote { get; set; } // 1 pour upvote, -1 pour downvote
-		public DateTime CreatedAt { get; set; } = DateTime.Now;
+		public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-		// Propriété de navigation
+		// Propriï¿½tï¿½ de navigation
 		public Incident? Incident { get; set; }
 	}
 
@@ -78,9 +78,9 @@ namespace IncidentsService.Models
 		[Required]
 		public double Longitude { get; set; }
 
-		public double Radius { get; set; } = 5.0; // Rayon en km, par défaut 5 km
+		public double Radius { get; set; } = 5.0; // Rayon en km, par dï¿½faut 5 km
 
-		public string? Types { get; set; } // Types d'incidents séparés par des virgules
+		public string? Types { get; set; } // Types d'incidents sï¿½parï¿½s par des virgules
 	}
 
 	public class VoteRequest
