@@ -85,7 +85,7 @@ namespace IncidentsService.Controllers
                 var userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
                 if (userId == 0)
                 {
-                    return Unauthorized("Utilisateur non authentifi�.");
+                    return Unauthorized("Utilisateur non authentifié.");
                 }
 
                 var result = await _incidentService.VoteForIncident(id, userId, request);
@@ -93,7 +93,7 @@ namespace IncidentsService.Controllers
             }
             catch (KeyNotFoundException)
             {
-                return NotFound("L'incident demand� n'a pas �t� trouv�.");
+                return NotFound("L'incident demandé n'a pas été trouvé.");
             }
             catch (InvalidOperationException ex)
             {
