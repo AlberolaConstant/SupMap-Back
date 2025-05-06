@@ -1,20 +1,20 @@
-# Service d'Incidents (Incidents Service)
+# Service d'Incidents (Incident Service)
 
-Ce microservice gère le signalement et la consultation des incidents de circulation pour l'application.
+Ce microservice gÃ¨re le signalement et la consultation des incidents de circulation pour l'application.
 
-## Fonctionnalités
+## FonctionnalitÃ©s
 
 - Signalement d'incidents de circulation (accidents, travaux, etc.)
-- Consultation des incidents à proximité
+- Consultation des incidents Ã  proximitÃ©
 - Vote et validation des incidents
-- Durée de vie des incidents
+- DurÃ©e de vie des incidents
 - Filtrage par type d'incident
 
 ## Endpoints API
 
 ### Signaler un incident
 ```
-POST /api/incidents
+POST /api/incident
 ```
 
 **Headers**:
@@ -22,7 +22,7 @@ POST /api/incidents
 Authorization: Bearer {token}
 ```
 
-**Corps de la requête**:
+**Corps de la requÃªte**:
 ```json
 {
   "latitude": "double",
@@ -33,7 +33,7 @@ Authorization: Bearer {token}
 }
 ```
 
-**Réponse**:
+**RÃ©ponse**:
 ```json
 {
   "id": "integer",
@@ -51,9 +51,9 @@ Authorization: Bearer {token}
 }
 ```
 
-### Récupérer les incidents à proximité
+### RÃ©cupÃ©rer les incidents Ã  proximitÃ©
 ```
-GET /api/incidents/nearby
+GET /api/incident/nearby
 ```
 
 **Headers**:
@@ -61,15 +61,15 @@ GET /api/incidents/nearby
 Authorization: Bearer {token}
 ```
 
-**Paramètres de requête**:
+**ParamÃ¨tres de requÃªte**:
 ```
 latitude: double
 longitude: double
-radius: double (en km, défaut: 5)
-types: string (séparés par des virgules, optionnel)
+radius: double (en km, dÃ©faut: 5)
+types: string (sÃ©parÃ©s par des virgules, optionnel)
 ```
 
-**Réponse**:
+**RÃ©ponse**:
 ```json
 [
   {
@@ -84,7 +84,7 @@ types: string (séparés par des virgules, optionnel)
     "expiresAt": "datetime",
     "upvotes": "integer",
     "downvotes": "integer",
-    "distance": "double", // distance par rapport à la position demandée (en km)
+    "distance": "double", // distance par rapport Ã  la position demandÃ©e (en km)
     "isActive": "boolean"
   }
 ]
@@ -92,7 +92,7 @@ types: string (séparés par des virgules, optionnel)
 
 ### Voter pour un incident
 ```
-POST /api/incidents/{id}/vote
+POST /api/incident/{id}/vote
 ```
 
 **Headers**:
@@ -100,14 +100,14 @@ POST /api/incidents/{id}/vote
 Authorization: Bearer {token}
 ```
 
-**Corps de la requête**:
+**Corps de la requÃªte**:
 ```json
 {
   "vote": "integer" // 1 pour upvote, -1 pour downvote
 }
 ```
 
-**Réponse**:
+**RÃ©ponse**:
 ```json
 {
   "id": "integer",
@@ -116,9 +116,9 @@ Authorization: Bearer {token}
 }
 ```
 
-### Désactiver un incident
+### DÃ©sactiver un incident
 ```
-PUT /api/incidents/{id}/status
+PUT /api/incident/{id}/status
 ```
 
 **Headers**:
@@ -126,14 +126,14 @@ PUT /api/incidents/{id}/status
 Authorization: Bearer {token}
 ```
 
-**Corps de la requête**:
+**Corps de la requÃªte**:
 ```json
 {
   "isActive": "boolean"
 }
 ```
 
-**Réponse**:
+**RÃ©ponse**:
 ```json
 {
   "id": "integer",
@@ -141,9 +141,9 @@ Authorization: Bearer {token}
 }
 ```
 
-### Récupérer un incident par ID
+### RÃ©cupÃ©rer un incident par ID
 ```
-GET /api/incidents/{id}
+GET /api/incident/{id}
 ```
 
 **Headers**:
@@ -151,7 +151,7 @@ GET /api/incidents/{id}
 Authorization: Bearer {token}
 ```
 
-**Réponse**:
+**RÃ©ponse**:
 ```json
 {
   "id": "integer",
@@ -169,7 +169,7 @@ Authorization: Bearer {token}
 }
 ```
 
-## Structure de la Base de Données
+## Structure de la Base de DonnÃ©es
 
 Table `Incidents`:
 - `Id` (SERIAL, PK)
@@ -190,22 +190,22 @@ Table `IncidentVotes`:
 - `Vote` (INTEGER, NOT NULL) // 1 pour upvote, -1 pour downvote
 - `CreatedAt` (TIMESTAMP, DEFAULT CURRENT_TIMESTAMP)
 
-## Technologies Utilisées
+## Technologies UtilisÃ©es
 
 - .NET 8.0
 - Entity Framework Core 8.0
 - PostgreSQL
 - JWT Authentication
-- NetTopologySuite pour les calculs géographiques
+- NetTopologySuite pour les calculs gÃ©ographiques
 - Swagger pour la documentation API
 
 ## Configuration
 
-Les variables d'environnement sont définies dans le fichier `.env` :
-- `DB_HOST`: Hôte de la base de données
-- `DB_PORT`: Port de la base de données
-- `DB_NAME`: Nom de la base de données
-- `DB_USER`: Nom d'utilisateur de la base de données
-- `DB_PASSWORD`: Mot de passe de la base de données
-- `JWT_SECRET`: Clé secrète pour la vérification des tokens JWT
+Les variables d'environnement sont dÃ©finies dans le fichier `.env` :
+- `DB_HOST`: HÃ´te de la base de donnÃ©es
+- `DB_PORT`: Port de la base de donnÃ©es
+- `DB_NAME`: Nom de la base de donnÃ©es
+- `DB_USER`: Nom d'utilisateur de la base de donnÃ©es
+- `DB_PASSWORD`: Mot de passe de la base de donnÃ©es
+- `JWT_SECRET`: ClÃ© secrÃ¨te pour la vÃ©rification des tokens JWT
 - `USER_SERVICE_URL`: URL du service utilisateur
