@@ -9,7 +9,6 @@ using DotNetEnv;
 using UserService.Data;
 using System;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 
@@ -19,7 +18,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 Env.Load();
 
-// Ajouter les services à l'application
+// Ajouter les services ï¿½ l'application
 builder.Services.AddControllers();
 
 //CORS
@@ -33,7 +32,7 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Configuration de la connexion à la base de données via les variables d'environnement
+// Configuration de la connexion ï¿½ la base de donnï¿½es via les variables d'environnement
 var dbHost = Environment.GetEnvironmentVariable("DB_HOST");
 var dbPort = Environment.GetEnvironmentVariable("DB_PORT");
 var dbName = Environment.GetEnvironmentVariable("DB_NAME");
@@ -46,7 +45,7 @@ builder.Services.AddDbContext<UserDbContext>(opt =>
     opt.UseNpgsql(connectionString));
 
 // Configuration de l'authentification JWT
-var jwtKey = Environment.GetEnvironmentVariable("JWT_SECRET"); // Récupérer la clé JWT depuis les variables d'environnement
+var jwtKey = Environment.GetEnvironmentVariable("JWT_SECRET"); // Rï¿½cupï¿½rer la clï¿½ JWT depuis les variables d'environnement
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(opt =>
@@ -69,7 +68,7 @@ builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "User Service API", Version = "v1" });
 
-    // Ajouter la définition de sécurité pour JWT Bearer
+    // Ajouter la dï¿½finition de sï¿½curitï¿½ pour JWT Bearer
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Description = "JWT Authorization header using the Bearer scheme. Exemple: 'Bearer {token}'",
@@ -79,7 +78,7 @@ builder.Services.AddSwaggerGen(c =>
         Scheme = "Bearer"
     });
 
-    // Appliquer la sécurité à toutes les routes par défaut
+    // Appliquer la sï¿½curitï¿½ ï¿½ toutes les routes par dï¿½faut
     c.AddSecurityRequirement(new OpenApiSecurityRequirement{
         {
             new OpenApiSecurityScheme {
@@ -98,7 +97,7 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
-// Appliquer automatiquement les migrations au démarrage de l'application
+// Appliquer automatiquement les migrations au dï¿½marrage de l'application
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<UserDbContext>();
@@ -107,7 +106,7 @@ using (var scope = app.Services.CreateScope())
     try
     {
         logger.LogInformation("Applying database migrations...");
-        dbContext.Database.Migrate(); // Applique les migrations non appliquées
+        dbContext.Database.Migrate(); // Applique les migrations non appliquï¿½es
         logger.LogInformation("Migrations applied successfully.");
     }
     catch (Exception ex)
