@@ -30,7 +30,7 @@ L'application est construite sur une architecture de microservices avec les comp
 
 1. Clonez ce dépôt :
    ```bash
-   git clone [https://github.com/votre-utilisateur/supmap.git](https://github.com/AlberolaConstant/SupMap-Back.git)
+   git clone https://github.com/AlberolaConstant/SupMap-Back.git
    cd supmap
    ```
 
