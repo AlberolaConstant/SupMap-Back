@@ -45,11 +45,10 @@ L'application est construite sur une architecture de microservices avec les comp
 
 Les API sont accessibles via les URL suivantes :
 
-- **Auth API** : `http://localhost/api/auth`
-- **User API** : `http://localhost/api/user`
-- **Route API** : `http://localhost/api/route`
-- **Incident API** : `http://localhost/api/incident`
-- **Navigation API** (Valhalla) : `http://localhost/api/navigation`
+- Auth API : [http://localhost/api/auth/swagger/index.html](http://localhost/api/auth/swagger/index.html)
+- User API : [http://localhost/api/user/swagger/index.html](http://localhost/api/user/swagger/index.html)
+- Route API : [http://localhost/api/route/swagger/index.html](http://localhost/api/route/swagger/index.html)
+- Incident API : [http://localhost/api/incident/swagger/index.html](http://localhost/api/incident/swagger/index.html)
 
 ## 📚 Documentation Swagger
 
