@@ -1,18 +1,18 @@
 # Service Utilisateur (User Service)
 
-Ce microservice gère les opérations CRUD pour les utilisateurs de l'application.
+Ce microservice gÃ¨re les profils utilisateurs et leurs informations personnelles pour l'application SupMap.
 
-## Fonctionnalités
+## âœ¨ FonctionnalitÃ©s
 
-- Récupération des informations utilisateur
-- Mise à jour des profils utilisateur
-- Suppression de compte utilisateur
-- Recherche d'utilisateurs
-- Gestion des préférences utilisateur
+- RÃ©cupÃ©ration des informations utilisateur
+- Mise Ã  jour du profil utilisateur
+- Suppression de compte
+- Autorisation basÃ©e sur les tokens JWT
+- Gestion des rÃ´les utilisateur
 
-## Endpoints API
+## ðŸ‘¤ Endpoints API
 
-### Récupérer tous les utilisateurs
+### RÃ©cupÃ©rer tous les utilisateurs
 ```
 GET /api/user
 ```
@@ -22,19 +22,20 @@ GET /api/user
 Authorization: Bearer {token}
 ```
 
-**Réponse**:
+**RÃ©ponse**:
 ```json
 [
   {
     "id": "integer",
     "userName": "string",
     "email": "string",
-    "role": "string"
+    "role": "string",
+    "creationDate": "datetime"
   }
 ]
 ```
 
-### Récupérer un utilisateur par ID
+### RÃ©cupÃ©rer un utilisateur par ID
 ```
 GET /api/user/{id}
 ```
@@ -44,19 +45,38 @@ GET /api/user/{id}
 Authorization: Bearer {token}
 ```
 
-**Réponse**:
+**RÃ©ponse**:
+```json
+{
+  "id": "integer",
+  "userName": "string"
+}
+```
+
+### RÃ©cupÃ©rer le profil de l'utilisateur connectÃ©
+```
+GET /api/user/me
+```
+
+**Headers**:
+```
+Authorization: Bearer {token}
+```
+
+**RÃ©ponse**:
 ```json
 {
   "id": "integer",
   "userName": "string",
   "email": "string",
-  "role": "string"
+  "role": "string",
+  "creationDate": "datetime"
 }
 ```
 
-### Récupérer le profil de l'utilisateur connecté
+### CrÃ©er un nouvel utilisateur
 ```
-GET /api/user/profile
+POST /api/user/create
 ```
 
 **Headers**:
@@ -64,62 +84,19 @@ GET /api/user/profile
 Authorization: Bearer {token}
 ```
 
-**Réponse**:
+**Corps de la requÃªte**:
 ```json
 {
-  "id": "integer",
-  "userName": "string",
-  "email": "string",
-  "role": "string"
-}
-```
-
-### Mettre à jour un utilisateur
-```
-PUT /api/user/{id}
-```
-
-**Headers**:
-```
-Authorization: Bearer {token}
-```
-
-**Corps de la requête**:
-```json
-{
-  "userName": "string",
-  "email": "string"
-}
-```
-
-**Réponse**:
-```json
-{
-  "id": "integer",
   "userName": "string",
   "email": "string",
+  "password": "string",
   "role": "string"
 }
 ```
 
-### Supprimer un utilisateur
+### Mettre Ã  jour le profil de l'utilisateur connectÃ©
 ```
-DELETE /api/user/{id}
-```
-
-**Headers**:
-```
-Authorization: Bearer {token}
-```
-
-**Réponse**:
-```
-204 No Content
-```
-
-### Mettre à jour les préférences utilisateur
-```
-PATCH /api/user/{id}/preferences
+PUT /api/user/update/me
 ```
 
 **Headers**:
@@ -127,58 +104,82 @@ PATCH /api/user/{id}/preferences
 Authorization: Bearer {token}
 ```
 
-**Corps de la requête**:
+**Corps de la requÃªte**:
 ```json
 {
-  "defaultTransportMode": "string",
-  "avoidTolls": "boolean",
-  "avoidHighways": "boolean",
-  "distanceUnit": "string"
+  "userName": "string", // optionnel
+  "email": "string", // optionnel
+  "password": "string" // optionnel
 }
 ```
 
-**Réponse**:
-```json
-{
-  "id": "integer",
-  "defaultTransportMode": "string",
-  "avoidTolls": "boolean",
-  "avoidHighways": "boolean",
-  "distanceUnit": "string"
-}
+### Supprimer le compte de l'utilisateur connectÃ©
+```
+DELETE /api/user/delete/me
 ```
 
-## Structure de la Base de Données
+**Headers**:
+```
+Authorization: Bearer {token}
+```
 
-Table `Users`:
-- `Id` (PK, SERIAL)
-- `UserName` (VARCHAR(50), NOT NULL, UNIQUE)
-- `Email` (VARCHAR(100), NOT NULL, UNIQUE)
-- `Password` (VARCHAR(255), NOT NULL)
+## ðŸ› ï¸ Technologies utilisÃ©es
+
+- **.NET 8.0** : Framework de dÃ©veloppement
+- **Entity Framework Core 8.0** : ORM pour l'accÃ¨s aux donnÃ©es
+- **PostgreSQL** : Stockage des donnÃ©es utilisateurs
+- **JWT Bearer** : Authentification basÃ©e sur les tokens
+- **BCrypt.Net-Next** : Gestion sÃ©curisÃ©e des mots de passe
+- **Swagger/OpenAPI** : Documentation d'API automatisÃ©e
+
+## âš™ï¸ Configuration
+
+Les variables d'environnement sont dÃ©finies dans le fichier `.env` :
+
+- `DB_HOST` : HÃ´te de la base de donnÃ©es
+- `DB_PORT` : Port de la base de donnÃ©es
+- `DB_NAME` : Nom de la base de donnÃ©es
+- `DB_USER` : Nom d'utilisateur de la base de donnÃ©es
+- `DB_PASSWORD` : Mot de passe de la base de donnÃ©es
+- `JWT_SECRET` : ClÃ© secrÃ¨te pour la validation des tokens JWT
+- `JWT_ISSUER` : Ã‰metteur des tokens JWT
+- `JWT_AUDIENCE` : Public cible des tokens JWT
+
+## ðŸ“Š SchÃ©ma de la base de donnÃ©es
+
+Table `Users` :
+- `Id` (SERIAL, PK)
+- `UserName` (VARCHAR(50), UNIQUE)
+- `Email` (VARCHAR(100), UNIQUE)
+- `Password` (VARCHAR(255))
 - `Role` (VARCHAR(20), DEFAULT 'User')
 - `CreationDate` (TIMESTAMP, DEFAULT CURRENT_TIMESTAMP)
 
-Table `UserPreferences` (à implémenter):
-- `UserId` (PK, FK -> Users.Id)
-- `DefaultTransportMode` (VARCHAR(20), DEFAULT 'auto')
-- `AvoidTolls` (BOOLEAN, DEFAULT FALSE)
-- `AvoidHighways` (BOOLEAN, DEFAULT FALSE)
-- `DistanceUnit` (VARCHAR(10), DEFAULT 'km')
+## ðŸ”’ SÃ©curitÃ©
 
-## Technologies Utilisées
+- Tous les endpoints nÃ©cessitent une authentification
+- VÃ©rification de la validitÃ© du token JWT
+- VÃ©rification de l'identitÃ© de l'utilisateur pour les opÃ©rations sensibles
+- Hachage des mots de passe avec BCrypt lors de leur mise Ã  jour
 
-- .NET 8.0
-- Entity Framework Core 8.0
-- PostgreSQL
-- JWT Authentication
-- Swagger pour la documentation API
+## ðŸ§ª Test de l'API
 
-## Configuration
+Utilisez Postman ou cURL pour tester les endpoints :
 
-Les variables d'environnement sont définies dans le fichier `.env` :
-- `DB_HOST`: Hôte de la base de données
-- `DB_PORT`: Port de la base de données
-- `DB_NAME`: Nom de la base de données
-- `DB_USER`: Nom d'utilisateur de la base de données
-- `DB_PASSWORD`: Mot de passe de la base de données
-- `JWT_SECRET`: Clé secrète pour la vérification des tokens JWT
+```bash
+# RÃ©cupÃ©rer le profil de l'utilisateur connectÃ©
+curl -X GET http://localhost/api/user/me \
+  -H "Authorization: Bearer {token}"
+
+# Mettre Ã  jour le profil
+curl -X PUT http://localhost/api/user/update/me \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer {token}" \
+  -d '{"userName":"nouveau_nom"}'
+```
+
+## ðŸ”Œ IntÃ©gration avec d'autres services
+
+- **Auth Service** : Fournit l'authentification et les tokens JWT
+- **Route Service** : Utilise l'identitÃ© de l'utilisateur pour les itinÃ©raires
+- **Incident Service** : Associe les incidents aux utilisateurs

@@ -1,16 +1,25 @@
 # Service d'Incidents (Incident Service)
 
-Ce microservice gère le signalement et la consultation des incidents de circulation pour l'application.
+Ce microservice gère le signalement et la consultation des incidents de circulation pour l'application SupMap.
 
-## Fonctionnalités
+## 🚨 Fonctionnalités
 
-- Signalement d'incidents de circulation (accidents, travaux, etc.)
-- Consultation des incidents à proximité
-- Vote et validation des incidents
-- Durée de vie des incidents
-- Filtrage par type d'incident
+- Signalement d'incidents routiers (accidents, travaux, police, obstacles, etc.)
+- Recherche d'incidents à proximité d'une position
+- Système de votes (upvote/downvote) pour valider les incidents
+- Gestion de la durée de vie des incidents
+- Nettoyage automatique des incidents expirés
 
-## Endpoints API
+## 🚦 Types d'incidents supportés
+
+- **accident** : Accidents de circulation
+- **construction** : Travaux routiers
+- **police** : Contrôles policiers
+- **hazard** : Obstacles ou dangers sur la route
+- **closure** : Routes fermées
+- **traffic_jam** : Embouteillages
+
+## 📡 Endpoints API
 
 ### Signaler un incident
 ```
@@ -116,7 +125,7 @@ Authorization: Bearer {token}
 }
 ```
 
-### Désactiver un incident
+### Mettre à jour le statut d'un incident
 ```
 PUT /api/incident/{id}/status
 ```
@@ -169,43 +178,83 @@ Authorization: Bearer {token}
 }
 ```
 
-## Structure de la Base de Données
+## ⏰ Gestion de la durée de vie
 
-Table `Incidents`:
+Les incidents ont une durée de vie automatique qui dépend de leur type :
+- **accident** : Au moins 2 heures
+- **construction** : Au moins 24 heures
+- **police** : Au moins 1 heure
+- **hazard** : Au moins 2 heures
+- **closure** : Au moins 4 heures
+- **traffic_jam** : Au moins 30 minutes
+
+Un service de nettoyage automatique désactive les incidents expirés.
+
+## 🛠️ Technologies utilisées
+
+- **.NET 8.0** : Framework de développement
+- **Entity Framework Core 8.0** : ORM pour l'accès aux données
+- **PostgreSQL** : Stockage des incidents
+- **JWT Bearer** : Authentification par tokens
+- **Formule de Haversine** : Calcul des distances géographiques
+- **Service hébergé** : Nettoyage automatique des incidents expirés
+- **Swagger/OpenAPI** : Documentation d'API automatisée
+
+## ⚙️ Configuration
+
+Les variables d'environnement sont définies dans le fichier `.env` :
+
+- `DB_HOST` : Hôte de la base de données
+- `DB_PORT` : Port de la base de données
+- `DB_NAME` : Nom de la base de données
+- `DB_USER` : Nom d'utilisateur de la base de données
+- `DB_PASSWORD` : Mot de passe de la base de données
+- `CONNECTION_STRING` : Chaîne de connexion PostgreSQL complète
+- `JWT_SECRET` : Clé secrète pour la validation des tokens JWT
+- `JWT_ISSUER` : Émetteur des tokens JWT
+- `JWT_AUDIENCE` : Public cible des tokens JWT
+
+## 📊 Schéma de la base de données
+
+Table `Incidents` :
 - `Id` (SERIAL, PK)
 - `UserId` (INTEGER, NOT NULL)
-- `UserName` (VARCHAR(50), NOT NULL)
+- `UserName` (VARCHAR(255), NOT NULL)
 - `Latitude` (DOUBLE PRECISION, NOT NULL)
 - `Longitude` (DOUBLE PRECISION, NOT NULL)
-- `Type` (VARCHAR(20), NOT NULL) // accident, construction, police, hazard, closure, traffic_jam
+- `Type` (VARCHAR(50), NOT NULL)
 - `Description` (TEXT, NOT NULL)
-- `CreatedAt` (TIMESTAMP, DEFAULT CURRENT_TIMESTAMP)
+- `CreatedAt` (TIMESTAMP, NOT NULL, DEFAULT NOW())
 - `ExpiresAt` (TIMESTAMP, NOT NULL)
-- `IsActive` (BOOLEAN, DEFAULT TRUE)
+- `IsActive` (BOOLEAN, NOT NULL, DEFAULT TRUE)
 
-Table `IncidentVotes`:
+Table `IncidentVotes` :
 - `Id` (SERIAL, PK)
 - `IncidentId` (INTEGER, NOT NULL, FK -> Incidents.Id)
 - `UserId` (INTEGER, NOT NULL)
 - `Vote` (INTEGER, NOT NULL) // 1 pour upvote, -1 pour downvote
-- `CreatedAt` (TIMESTAMP, DEFAULT CURRENT_TIMESTAMP)
+- `CreatedAt` (TIMESTAMP, NOT NULL, DEFAULT NOW())
 
-## Technologies Utilisées
+## 🔍 Algorithme de recherche géographique
 
-- .NET 8.0
-- Entity Framework Core 8.0
-- PostgreSQL
-- JWT Authentication
-- NetTopologySuite pour les calculs géographiques
-- Swagger pour la documentation API
+Le service utilise la formule de Haversine pour calculer la distance entre deux points géographiques. Cette formule prend en compte la courbure de la Terre pour déterminer précisément la distance au sol entre deux paires de coordonnées (latitude, longitude).
 
-## Configuration
+## 🔒 Sécurité
 
-Les variables d'environnement sont définies dans le fichier `.env` :
-- `DB_HOST`: Hôte de la base de données
-- `DB_PORT`: Port de la base de données
-- `DB_NAME`: Nom de la base de données
-- `DB_USER`: Nom d'utilisateur de la base de données
-- `DB_PASSWORD`: Mot de passe de la base de données
-- `JWT_SECRET`: Clé secrète pour la vérification des tokens JWT
-- `USER_SERVICE_URL`: URL du service utilisateur
+- Tous les endpoints nécessitent une authentification
+- Vérification que seul le créateur d'un incident peut modifier son statut
+- Limitation à un seul vote par utilisateur et par incident
+
+## 🧪 Test de l'API
+
+Utilisez Postman ou cURL pour tester les endpoints :
+
+```bash
+# Signaler un accident
+curl -X POST http://localhost/api/incident \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer {token}" \
+  -d '{"latitude":45.762089,"longitude":4.830909,"type":"accident","description":"Collision entre deux véhicules"}'
+
+# Trouver les incidents à proximité
+curl -X GET "http://localhost/api/incident/nearby?latitude=45.762089&longitude=4.830909&radius=
