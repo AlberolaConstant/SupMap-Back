@@ -39,7 +39,7 @@ L'application est construite sur une architecture de microservices avec les comp
    docker compose up -d
    ```
 
-## 📡 Endpoints API
+## 📚 Documentation & Endpoints API avec Swagger
 
 Les API sont accessibles via les URL suivantes :
 
@@ -47,15 +47,6 @@ Les API sont accessibles via les URL suivantes :
 - User API : [http://localhost/api/user/swagger/index.html](http://localhost/api/user/swagger/index.html)
 - Route API : [http://localhost/api/route/swagger/index.html](http://localhost/api/route/swagger/index.html)
 - Incident API : [http://localhost/api/incident/swagger/index.html](http://localhost/api/incident/swagger/index.html)
-
-## 📚 Documentation Swagger
-
-Les documentations Swagger sont disponibles pour chaque service :
-
-- Auth API : [http://localhost/api/auth/swagger](http://localhost/api/auth/swagger)
-- User API : [http://localhost/api/user/swagger](http://localhost/api/user/swagger)
-- Route API : [http://localhost/api/route/swagger](http://localhost/api/route/swagger)
-- Incident API : [http://localhost/api/incident/swagger](http://localhost/api/incident/swagger)
 
 ## 🔐 Variables d'environnement
 
@@ -92,14 +83,3 @@ Chaque service dispose de son propre README détaillé :
 - [Route Service](./route-service/README.md)
 - [Incident Service](./incident-service/README.md)
 
-## 🤝 Contribution
-
-1. Forkez le projet
-2. Créez votre branche de fonctionnalité (`git checkout -b feature/amazing-feature`)
-3. Commitez vos changements (`git commit -m 'Add some amazing feature'`)
-4. Poussez vers la branche (`git push origin feature/amazing-feature`)
-5. Ouvrez une Pull Request
-
-## 📝 Licence
-
-Ce projet est sous licence [MIT](LICENSE).
