@@ -39,8 +39,6 @@ L'application est construite sur une architecture de microservices avec les comp
    docker compose up -d
    ```
 
-3. L'application est maintenant accessible sur http://localhost
-
 ## 📡 Endpoints API
 
 Les API sont accessibles via les URL suivantes :
