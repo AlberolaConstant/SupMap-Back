@@ -31,7 +31,7 @@ L'application est construite sur une architecture de microservices avec les comp
 1. Clonez ce dépôt :
    ```bash
    git clone https://github.com/AlberolaConstant/SupMap-Back.git
-   cd supmap
+   cd SupMap-Back
    ```
 
 2. Lancez l'ensemble des services avec Docker Compose :
