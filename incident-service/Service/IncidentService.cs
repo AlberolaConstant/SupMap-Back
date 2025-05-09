@@ -23,7 +23,7 @@ namespace IncidentsService.Services
         {
             try
             {
-                _logger.LogDebug("Cr�ation d'un incident par l'utilisateur {UserId}", userId);
+                _logger.LogDebug("Création d'un incident par l'utilisateur {UserId}", userId);
                 // Calculer la date d'expiration
                 int durationMinutes = request.ExpectedDuration ?? 60; // Par d�faut, 60 minutes
 
@@ -73,8 +73,8 @@ namespace IncidentsService.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erreur lors de la cr�ation d'un incident");
-                throw new Exception("Impossible de cr�er l'incident. Veuillez r�essayer plus tard.", ex);
+                _logger.LogError(ex, "Erreur lors de la création d'un incident");
+                throw new Exception("Impossible de créer l'incident. Veuillez réessayer plus tard.", ex);
             }
         }
 
@@ -82,7 +82,7 @@ namespace IncidentsService.Services
         {
             try
             {
-                _logger.LogDebug("R�cup�ration de l'incident avec l'ID {Id}", id);
+                _logger.LogDebug("Récupération de l'incident avec l'ID {Id}", id);
 
                 var incident = await _context.Incidents
                     .Include(i => i.Votes)
@@ -90,7 +90,7 @@ namespace IncidentsService.Services
 
                 if (incident == null)
                 {
-                    throw new KeyNotFoundException("L'incident demand� n'a pas �t� trouv�.");
+                    throw new KeyNotFoundException("L'incident demandé n'a pas été trouvé.");
                 }
 
                 int upvotes = incident.Votes.Count(v => v.Vote > 0);
@@ -118,8 +118,8 @@ namespace IncidentsService.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erreur lors de la r�cup�ration de l'incident");
-                throw new Exception("Impossible de r�cup�rer l'incident. Veuillez r�essayer plus tard.", ex);
+                _logger.LogError(ex, "Erreur lors de la récupération de l'incident");
+                throw new Exception("Impossible de récupérer l'incident. Veuillez réessayer plus tard.", ex);
             }
         }
 
@@ -127,32 +127,32 @@ namespace IncidentsService.Services
         {
             try
             {
-                _logger.LogDebug("Recherche d'incidents � proximit� de ({Lat}, {Lon}) dans un rayon de {Radius} km",
+                _logger.LogDebug("Recherche d'incidents à proximité de ({Lat}, {Lon}) dans un rayon de {Radius} km",
                     request.Latitude, request.Longitude, request.Radius);
 
-                // Filtrer les types d'incidents si sp�cifi�s
+                // Filtrer les types d'incidents si spécifiés
                 var typesFilter = new List<string>();
                 if (!string.IsNullOrEmpty(request.Types))
                 {
                     typesFilter = request.Types.Split(',').Select(t => t.Trim()).ToList();
                 }
 
-                // R�cup�rer tous les incidents actifs qui ne sont pas expir�s
+                // Récupérer tous les incidents actifs qui ne sont pas expirés
                 var query = _context.Incidents
                     .Include(i => i.Votes)
                     .Where(i => i.IsActive && i.ExpiresAt > DateTime.UtcNow);
 
-                // Appliquer le filtre par type si n�cessaire
+                // Appliquer le filtre par type si nécessaire
                 if (typesFilter.Any())
                 {
                     query = query.Where(i => typesFilter.Contains(i.Type));
                 }
 
-                // R�cup�rer les incidents
+                // Récupérer les incidents
                 var incidents = await query.ToListAsync();
 
                 // Calculer la distance pour chaque incident et filtrer par rayon
-                // Note: Dans une impl�mentation r�elle, vous utiliseriez NetTopologySuite pour des calculs g�ographiques pr�cis
+                // Note: Dans une implémentation réelle, vous utiliseriez NetTopologySuite pour des calculs géographiques précis
                 var result = incidents
                     .Select(i => {
                         double distance = CalculateDistance(
@@ -188,8 +188,8 @@ namespace IncidentsService.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erreur lors de la recherche d'incidents � proximit�");
-                throw new Exception("Impossible de rechercher les incidents � proximit�. Veuillez r�essayer plus tard.", ex);
+                _logger.LogError(ex, "Erreur lors de la recherche d'incidents à proximité");
+                throw new Exception("Impossible de rechercher les incidents à proximité. Veuillez réessayer plus tard.", ex);
             }
         }
 
@@ -200,33 +200,33 @@ namespace IncidentsService.Services
                 _logger.LogDebug("Vote de l'utilisateur {UserId} pour l'incident {IncidentId}: {Vote}",
                     userId, incidentId, request.Vote);
 
-                // V�rifier que l'incident existe et est actif
+                // Vérifier que l'incident existe et est actif
                 var incident = await _context.Incidents
                     .Include(i => i.Votes)
                     .FirstOrDefaultAsync(i => i.Id == incidentId);
 
                 if (incident == null)
                 {
-                    throw new KeyNotFoundException("L'incident demand� n'a pas �t� trouv�.");
+                    throw new KeyNotFoundException("L'incident demandé n'a pas été trouvé.");
                 }
 
                 if (!incident.IsActive || incident.ExpiresAt < DateTime.UtcNow)
                 {
-                    throw new InvalidOperationException("Impossible de voter pour un incident inactif ou expir�.");
+                    throw new InvalidOperationException("Impossible de voter pour un incident inactif ou expiré.");
                 }
 
-                // V�rifier si l'utilisateur a d�j� vot�
+                // Vérifier si l'utilisateur a déjà voté
                 var existingVote = await _context.IncidentVotes
                     .FirstOrDefaultAsync(v => v.IncidentId == incidentId && v.UserId == userId);
 
                 if (existingVote != null)
                 {
-                    // Mettre � jour le vote existant
+                    // Mettre à jour le vote existant
                     existingVote.Vote = request.Vote;
                 }
                 else
                 {
-                    // Cr�er un nouveau vote
+                    // Créer un nouveau vote
                     var vote = new IncidentVote
                     {
                         IncidentId = incidentId,
@@ -239,7 +239,7 @@ namespace IncidentsService.Services
 
                 await _context.SaveChangesAsync();
 
-                // Recharger l'incident pour obtenir les votes mis � jour
+                // Recharger l'incident pour obtenir les votes mis à jour
                 incident = await _context.Incidents
                     .Include(i => i.Votes)
                     .FirstOrDefaultAsync(i => i.Id == incidentId);
@@ -265,7 +265,7 @@ namespace IncidentsService.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Erreur lors du vote pour un incident");
-                throw new Exception("Impossible d'enregistrer votre vote. Veuillez r�essayer plus tard.", ex);
+                throw new Exception("Impossible d'enregistrer votre vote. Veuillez réessayer plus tard.", ex);
             }
         }
 
@@ -273,19 +273,19 @@ namespace IncidentsService.Services
         {
             try
             {
-                _logger.LogDebug("Mise � jour du statut de l'incident {IncidentId} par l'utilisateur {UserId}: {Status}",
+                _logger.LogDebug("Mise à jour du statut de l'incident {IncidentId} par l'utilisateur {UserId}: {Status}",
                     incidentId, userId, request.IsActive);
 
                 var incident = await _context.Incidents.FindAsync(incidentId);
                 if (incident == null)
                 {
-                    throw new KeyNotFoundException("L'incident demand� n'a pas �t� trouv�.");
+                    throw new KeyNotFoundException("L'incident demandé n'a pas été trouvé.");
                 }
 
-                // V�rifier que seul le propri�taire ou un admin peut modifier le statut
+                // Vérifier que seul le propriétaire ou un admin peut modifier le statut
                 if (incident.UserId != userId)
                 {
-                    throw new UnauthorizedAccessException("Vous n'�tes pas autoris� � modifier cet incident.");
+                    throw new UnauthorizedAccessException("Vous n'étes pas autorisé à modifier cet incident.");
                 }
 
                 incident.IsActive = request.IsActive;
@@ -307,8 +307,8 @@ namespace IncidentsService.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erreur lors de la mise � jour du statut de l'incident");
-                throw new Exception("Impossible de mettre � jour le statut de l'incident. Veuillez r�essayer plus tard.", ex);
+                _logger.LogError(ex, "Erreur lors de la mise à jour du statut de l'incident");
+                throw new Exception("Impossible de mettre à jour le statut de l'incident. Veuillez réessayer plus tard.", ex);
             }
         }
 
@@ -322,7 +322,7 @@ namespace IncidentsService.Services
         {
             try
             {
-                _logger.LogInformation("Nettoyage des incidents expir�s");
+                _logger.LogInformation("Nettoyage des incidents expirés");
 
                 var now = DateTime.UtcNow;
                 var expiredIncidents = await _context.Incidents
@@ -335,21 +335,21 @@ namespace IncidentsService.Services
                 }
 
                 await _context.SaveChangesAsync();
-                _logger.LogInformation("Nettoyage termin�: {Count} incidents d�sactiv�s", expiredIncidents.Count);
+                _logger.LogInformation("Nettoyage terminé: {Count} incidents désactivés", expiredIncidents.Count);
 
                 return true;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erreur lors du nettoyage des incidents expir�s");
+                _logger.LogError(ex, "Erreur lors du nettoyage des incidents expirés");
                 return false;
             }
         }
 
-        // M�thode auxiliaire pour calculer la distance entre deux coordonn�es (formule de Haversine)
+        // Méthode auxiliaire pour calculer la distance entre deux coordonnées (formule de Haversine)
         private double CalculateDistance(double lat1, double lon1, double lat2, double lon2)
         {
-            const double R = 6371; // Rayon de la Terre en kilom�tres
+            const double R = 6371; // Rayon de la Terre en kilométres
 
             var dLat = ToRadians(lat2 - lat1);
             var dLon = ToRadians(lon2 - lon1);
@@ -359,7 +359,7 @@ namespace IncidentsService.Services
                     Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
 
             var c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
-            return R * c; // Distance en kilom�tres
+            return R * c; // Distance en kilométres
         }
 
         private double ToRadians(double degrees)

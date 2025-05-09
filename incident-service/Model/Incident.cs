@@ -17,7 +17,7 @@ namespace IncidentsService.Models
 		public DateTime ExpiresAt { get; set; }
 		public bool IsActive { get; set; } = true;
 
-		// Propri�t�s de navigation
+		// Propriétés de navigation
 		public ICollection<IncidentVote> Votes { get; set; } = new List<IncidentVote>();
 	}
 
@@ -78,9 +78,9 @@ namespace IncidentsService.Models
 		[Required]
 		public double Longitude { get; set; }
 
-		public double Radius { get; set; } = 5.0; // Rayon en km, par d�faut 5 km
+		public double Radius { get; set; } = 5.0; // Rayon en km, par défaut 5 km
 
-		public string? Types { get; set; } // Types d'incidents s�par�s par des virgules
+		public string? Types { get; set; } // Types d'incidents séparés par des virgules
 	}
 
 	public class VoteRequest

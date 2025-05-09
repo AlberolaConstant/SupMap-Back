@@ -16,7 +16,7 @@ namespace IncidentsService.Services
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            _logger.LogInformation("Service de nettoyage des incidents démarré");
+            _logger.LogInformation("Service de nettoyage des incidents dÃ©marrÃ©");
 
             while (!stoppingToken.IsCancellationRequested)
             {
@@ -31,12 +31,12 @@ namespace IncidentsService.Services
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Erreur lors du nettoyage des incidents expirés");
+                    _logger.LogError(ex, "Erreur lors du nettoyage des incidents expirÃ©s");
                     await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
                 }
             }
 
-            _logger.LogInformation("Service de nettoyage des incidents arrêté");
+            _logger.LogInformation("Service de nettoyage des incidents arrÃ©tÃ©");
         }
 
         private async Task CleanupExpiredIncidents()
@@ -47,11 +47,11 @@ namespace IncidentsService.Services
             bool success = await incidentService.CleanupExpiredIncidents();
             if (success)
             {
-                _logger.LogInformation("Nettoyage des incidents expirés effectué avec succès");
+                _logger.LogInformation("Nettoyage des incidents expirÃ©s effectuÃ© avec succÃ©s");
             }
             else
             {
-                _logger.LogWarning("Le nettoyage des incidents expirés a échoué");
+                _logger.LogWarning("Le nettoyage des incidents expirÃ©s a Ã©chouÃ©");
             }
         }
     }
