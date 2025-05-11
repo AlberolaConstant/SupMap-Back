@@ -52,9 +52,10 @@ Les API sont accessibles via les URL suivantes :
 
 Le projet utilise plusieurs variables d'environnement définies dans les fichiers `.env` :
 
-- Bases de données : Paramètres de connexion PostgreSQL
+- Bases de données : Paramètres de connexion PostgreSQL 
 - JWT : Secret, émetteur et audience pour les tokens
 - Autres configurations spécifiques aux services
+Il est important que les variables d'environnement mises dans le .env correspondent afin de permettre la bonne connexion à la Base de données du service ou la validation JWT.
 
 ## 🔄 Flux d'utilisation typique
 
